@@ -3,12 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=--dns-result-order=ipv4first next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "prepare": "husky install"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^4.16.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.9",
+    "@mui/material": "^7.3.9",
+    "@mui/material-nextjs": "^7.3.9",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -19,6 +29,18 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.3.3",
+    "prettier": "^3.8.1",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
