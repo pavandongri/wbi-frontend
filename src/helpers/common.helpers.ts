@@ -32,5 +32,5 @@ export function logoutUser(): void {
 
   removeUser();
 
-  window.location.href = "/auth/logout";
+  window.location.href = "/";
 }

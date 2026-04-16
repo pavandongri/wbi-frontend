@@ -1,0 +1,52 @@
+---
+alwaysApply: false
+---
+
+# Frontend System Design
+
+## Role-Based UI
+
+### super-admin
+
+- dashboard
+- companies
+- subscriptions
+- billing
+
+### admin
+
+- dashboard
+- reports
+- agents
+- billing
+
+### agent
+
+- groups
+- customers
+- templates
+- chats
+- campaigns
+- workflows
+
+## Architecture
+
+- App Router based routing
+- Protected dashboard routes
+
+## State Management
+
+- React Query → server state
+- Zustand → client state
+
+## Structure
+
+- UI layer (components)
+- Hooks layer
+- Services layer
+
+## Goals
+
+- High performance
+- Clean separation of concerns
+- Reusable UI system

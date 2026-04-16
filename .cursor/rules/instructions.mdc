@@ -1,0 +1,51 @@
+---
+alwaysApply: false
+---
+
+# Frontend Instructions
+
+## Core Requirements
+
+- Modular
+- Readable
+- Scalable
+
+## Performance Rules
+
+- Code splitting
+- API optimization
+- Reduce JS size
+- Avoid heavy libraries
+- Import only what is needed
+
+## React Optimization
+
+- Use useMemo and useCallback where needed
+- Memoize components when needed
+- Use react-virtual where required
+
+## UX Rules
+
+- Premium design
+- Smooth transitions
+- No layout shifts
+- Consistent buttons
+- Proper loading states
+- Fast feedback on actions
+
+## UI States
+
+- Loading states must always exist
+- Empty states → show illustration + CTA
+- Error handling using toasts
+
+## Hooks & Reusability
+
+- Define custom hooks where needed
+- Build reusable components
+
+## Principles
+
+- Fast > fancy
+- Consistency > creativity
+- Simplicity > complexity
