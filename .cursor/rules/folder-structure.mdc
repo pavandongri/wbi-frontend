@@ -1,0 +1,35 @@
+---
+alwaysApply: false
+---
+
+# Frontend Folder Structure
+
+src/
+
+├── app/
+├── components/
+│ ├── ui/
+│ ├── layout/
+│ ├── table/
+│ ├── form/
+│ ├── charts/
+│ ├── feature/
+
+├── lib/
+├── hooks/
+├── services/
+├── store/
+├── types/
+├── config/
+├── styles/
+
+## Rules
+
+- components/ui → reusable UI
+- components/feature → feature-specific UI
+- services → API layer
+- hooks → reusable logic
+- store → Zustand state
+
+- No API calls inside components
+- Maintain separation of concerns

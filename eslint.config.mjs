@@ -18,6 +18,7 @@ export default defineConfig([
     rules: {
       "prettier/prettier": "error",
       "unused-imports/no-unused-imports": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
       "unused-imports/no-unused-vars": [
         "warn",
         {

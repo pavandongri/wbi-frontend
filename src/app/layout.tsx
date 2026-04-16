@@ -1,18 +1,25 @@
-import Layout from "@/components/layout/Layout";
+import RouteAwareLayout from "@/components/layout/RouteAwareLayout";
 import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
 import Providers from "./provider/page";
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins"
+});
+
 export const metadata: Metadata = {
-  title: "Auth0 Next.js App",
-  description: "Next.js app with Auth0 authentication"
+  title: "WBI Chat App",
+  description: "Premium messaging web app"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className={poppins.variable}>
         <Providers>
-          <Layout>{children}</Layout>
+          <RouteAwareLayout>{children}</RouteAwareLayout>
         </Providers>
       </body>
     </html>

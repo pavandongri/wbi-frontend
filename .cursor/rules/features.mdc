@@ -1,0 +1,27 @@
+---
+alwaysApply: false
+---
+
+# Frontend Features
+
+## Super Admin
+
+- Dashboard with stats
+- Manage companies
+- Manage subscriptions
+- Billing
+
+## Admin
+
+- Reports
+- Manage agents
+- Billing
+
+## Agent
+
+- Groups management
+- Customers management (with bulk upload)
+- Templates management
+- Chat system
+- Campaigns
+- Workflows

@@ -7,12 +7,18 @@ export default function Footer() {
     <Box
       sx={{
         mt: 5,
-        pt: 3,
-        borderTop: "1px solid #eee",
+        minHeight: 54,
+        borderTop: (theme) => `1px solid ${theme.palette.divider}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: { xs: 2, md: 3 },
         textAlign: "center"
       }}
     >
-      <Typography variant="body2">© {new Date().getFullYear()} MyApp</Typography>
+      <Typography variant="body2" color="text.secondary">
+        © {new Date().getFullYear()} MyApp
+      </Typography>
     </Box>
   );
 }

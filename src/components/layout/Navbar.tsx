@@ -8,9 +8,22 @@ import ProfileMenu from "../ProfileMenu";
 
 export default function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <AppBar position="fixed" color="inherit" elevation={1} sx={{ zIndex: 1300 }}>
+    <AppBar
+      position="fixed"
+      color="inherit"
+      elevation={0}
+      sx={{
+        zIndex: 1300,
+        borderBottom: (theme) => `1px solid ${theme.palette.divider}`
+      }}
+    >
       <Toolbar>
-        <IconButton edge="start" onClick={onMenuClick} sx={{ mr: 2, display: { md: "none" } }}>
+        <IconButton
+          edge="start"
+          onClick={onMenuClick}
+          sx={{ mr: 2, display: { md: "none" } }}
+          color="inherit"
+        >
           <MenuIcon />
         </IconButton>
 
