@@ -123,8 +123,9 @@ export default function Sidebar({
                 minHeight: 46,
                 px: 1.5,
                 justifyContent: "flex-start",
+                color: "text.secondary",
                 "&.Mui-selected": {
-                  bgcolor: "action.selected",
+                  bgcolor: "common.white",
                   color: "primary.main",
                   "& .MuiListItemIcon-root": {
                     color: "primary.main"
@@ -208,7 +209,7 @@ export default function Sidebar({
             position: "relative",
             width: desktopWidth,
             borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: "background.paper",
+            bgcolor: "background.default",
             boxSizing: "border-box",
             transition: theme.transitions.create("width", {
               duration: drawerTransitionDuration,
@@ -267,7 +268,7 @@ export default function Sidebar({
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             borderRight: `1px solid ${theme.palette.divider}`,
-            bgcolor: "background.paper",
+            bgcolor: "background.default",
             boxSizing: "border-box"
           }
         }}

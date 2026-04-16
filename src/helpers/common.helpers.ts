@@ -1,4 +1,6 @@
 import { APP_CONSTANTS } from "@/constants/app.consants";
+import { signOut } from "@/services/auth/auth.api";
+import { clearAuthClientSession } from "@/services/auth/authSession.client";
 import { User } from "@/types/common.types";
 
 export function getUser(): User | null {
@@ -27,10 +29,16 @@ export function removeUser(): void {
   localStorage.removeItem(APP_CONSTANTS.USER);
 }
 
-export function logoutUser(): void {
+export async function logoutUser(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  removeUser();
-
-  window.location.href = "/";
+  try {
+    await signOut();
+  } catch {
+    console.error("Failed to sign out");
+  } finally {
+    removeUser();
+    clearAuthClientSession();
+    window.location.href = "/";
+  }
 }

@@ -1,4 +1,4 @@
-import Layout from "@/components/layout/Layout";
+import RouteAwareLayout from "@/components/layout/RouteAwareLayout";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Providers from "./provider/page";
@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={poppins.variable}>
         <Providers>
-          <Layout>{children}</Layout>
+          <RouteAwareLayout>{children}</RouteAwareLayout>
         </Providers>
       </body>
     </html>
