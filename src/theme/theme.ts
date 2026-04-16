@@ -53,7 +53,9 @@ let theme = createTheme({
   },
 
   typography: {
-    fontFamily: ["Inter", "Roboto", "Helvetica", "Arial", "sans-serif"].join(","),
+    fontFamily: ["var(--font-poppins)", "Inter", "Roboto", "Helvetica", "Arial", "sans-serif"].join(
+      ","
+    ),
     fontWeightRegular: 400,
     fontWeightMedium: 500,
     fontWeightBold: 700,
