@@ -8,9 +8,11 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
 const drawerWidth = 240;
+const collapsedDrawerWidth = 84;
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleMenuClick = () => {
     setMobileOpen(true);
@@ -20,25 +22,38 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     setMobileOpen(false);
   };
 
+  const handleSidebarToggle = () => {
+    setIsSidebarCollapsed((prev) => !prev);
+  };
+
+  const desktopDrawerWidth = isSidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <Navbar onMenuClick={handleMenuClick} />
 
-      <Sidebar mobileOpen={mobileOpen} onClose={handleClose} />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onClose={handleClose}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleSidebarToggle}
+        desktopWidth={desktopDrawerWidth}
+      />
 
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          ml: { md: `${drawerWidth}px` },
           display: "flex",
           flexDirection: "column",
-          minHeight: "100vh"
+          minHeight: "100vh",
+          minWidth: 0,
+          bgcolor: "background.default"
         }}
       >
         <Toolbar />
 
-        <Box sx={{ flexGrow: 1, p: 3 }}>{children}</Box>
+        <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>{children}</Box>
 
         <Footer />
       </Box>
