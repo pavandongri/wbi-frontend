@@ -1,5 +1,6 @@
 import { APP_CONSTANTS } from "@/constants/app.consants";
 import { AuthClientSessionV1 } from "@/types/common.types";
+import { isAuthRole } from "@/types/roles";
 import type { AuthApiResponse } from "./auth.types";
 
 function isBrowser(): boolean {
@@ -30,9 +31,15 @@ function safeParse(raw: string | null): AuthClientSessionV1 | null {
       ttlMs: data.ttlMs,
       user: {
         id: data.user.id,
+        companyId: typeof data.user.companyId === "string" ? data.user.companyId : undefined,
         name: data.user.name,
         email: data.user.email,
-        picture: typeof data.user.picture === "string" ? data.user.picture : undefined
+        phone:
+          data.user.phone === null || typeof data.user.phone === "string"
+            ? data.user.phone
+            : undefined,
+        picture: typeof data.user.picture === "string" ? data.user.picture : undefined,
+        role: isAuthRole(data.user.role) ? data.user.role : undefined
       }
     };
   } catch {

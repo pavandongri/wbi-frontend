@@ -3,6 +3,7 @@
 import { Box, Toolbar } from "@mui/material";
 import { useState } from "react";
 
+import AccessGuard from "./AccessGuard";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -53,7 +54,9 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       >
         <Toolbar />
 
-        <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>{children}</Box>
+        <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+          <AccessGuard>{children}</AccessGuard>
+        </Box>
 
         <Footer />
       </Box>

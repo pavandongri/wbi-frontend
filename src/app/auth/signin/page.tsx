@@ -1,5 +1,6 @@
 "use client";
 
+import { getDefaultRouteForRole, normalizeRole } from "@/lib/rbac";
 import { signIn } from "@/services/auth/auth.api";
 import AuthShowcase from "@/components/auth/AuthShowcase";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -51,8 +52,8 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      await signIn({ email, password });
-      router.push("/dashboard");
+      const { user } = await signIn({ email, password });
+      router.push(getDefaultRouteForRole(normalizeRole(user)));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign-in failed";
       setErrorMessage(message);
