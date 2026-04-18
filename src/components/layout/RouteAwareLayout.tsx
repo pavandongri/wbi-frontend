@@ -1,7 +1,11 @@
 "use client";
 
+import { normalizeRole, resolvePostAuthPath } from "@/lib/rbac";
 import { getMe } from "@/services/auth/auth.api";
-import { isAuthClientSessionFresh } from "@/services/auth/authSession.client";
+import {
+  isAuthClientSessionFresh,
+  readAuthClientSession
+} from "@/services/auth/authSession.client";
 import { Box, CircularProgress } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -53,7 +57,8 @@ export default function RouteAwareLayout({ children }: RouteAwareLayoutProps) {
     if (!isAuthClientSessionFresh()) return;
 
     const next = new URLSearchParams(window.location.search).get("next");
-    const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
+    const role = normalizeRole(readAuthClientSession()?.user);
+    const target = resolvePostAuthPath(role, next);
     router.replace(target);
   }, [isAuthPath, router, pathname]);
 

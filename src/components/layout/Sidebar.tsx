@@ -15,23 +15,66 @@ import {
 import type { SxProps, Theme } from "@mui/material/styles";
 import { alpha, useTheme } from "@mui/material/styles";
 
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
+import ChatOutlinedIcon from "@mui/icons-material/ChatOutlined";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import HomeIcon from "@mui/icons-material/Home";
+import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import PersonIcon from "@mui/icons-material/Person";
+import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
+import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
+
+import type { NavIconKey } from "@/lib/rbac";
+import { getNavItemsForRole, normalizeRole } from "@/lib/rbac";
+import { readAuthClientSession } from "@/services/auth/authSession.client";
 
 const drawerWidth = 240;
 
-const menuItems = [
-  { text: "Home", icon: <HomeIcon />, href: "/" },
-  { text: "Profile", icon: <PersonIcon />, href: "/profile" },
-  { text: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" }
-];
+const NAV_ICONS: Record<NavIconKey, ReactNode> = {
+  dashboard: <DashboardIcon />,
+  subscriptionPlans: <LayersOutlinedIcon />,
+  subscriptions: <SubscriptionsOutlinedIcon />,
+  companies: <BusinessOutlinedIcon />,
+  reports: <AssessmentOutlinedIcon />,
+  agents: <SupportAgentOutlinedIcon />,
+  payments: <PaymentsOutlinedIcon />,
+  groups: <GroupsOutlinedIcon />,
+  customers: <PeopleOutlineIcon />,
+  templates: <ArticleOutlinedIcon />,
+  chats: <ChatOutlinedIcon />,
+  campaigns: <CampaignOutlinedIcon />,
+  workflows: <AccountTreeOutlinedIcon />
+};
+
+type NavLink = { text: string; icon: ReactNode; href: string };
+
+function buildSidebarLinks(): NavLink[] {
+  const role = normalizeRole(readAuthClientSession()?.user);
+  const core: NavLink[] = [{ text: "Profile", icon: <PersonIcon />, href: "/profile" }];
+  const scoped = getNavItemsForRole(role).map((item) => ({
+    text: item.label,
+    icon: NAV_ICONS[item.icon],
+    href: item.path
+  }));
+  return [...core, ...scoped];
+}
+
+function isNavSelected(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function Sidebar({
   mobileOpen,
@@ -112,13 +155,13 @@ export default function Sidebar({
       </Box>
 
       <List sx={{ pt: 0.5 }}>
-        {menuItems.map((item) => (
-          <Tooltip key={item.text} title={collapsed ? item.text : ""} placement="right">
+        {buildSidebarLinks().map((item) => (
+          <Tooltip key={item.href} title={collapsed ? item.text : ""} placement="right">
             <ListItemButton
               component={Link}
               href={item.href}
               onClick={onClose}
-              selected={pathname === item.href}
+              selected={isNavSelected(pathname, item.href)}
               sx={{
                 minHeight: 46,
                 px: 1.5,
@@ -200,7 +243,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Desktop */}
       <Drawer
         variant="permanent"
         sx={{
@@ -258,7 +300,6 @@ export default function Sidebar({
         </IconButton>
       </Tooltip>
 
-      {/* Mobile */}
       <Drawer
         variant="temporary"
         open={mobileOpen}

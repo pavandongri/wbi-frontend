@@ -1,0 +1,372 @@
+============= USERS ======================
+Roles:
+super-admin
+admin
+agent
+
+===============================================
+users:
+
+super-admin (who manages the full app)
+- can do all works done by admin
+- can create company and its super-admins
+- can see app-dashboard
+  - list of companies, their users (super-admins, admins, users)
+  - see their message templates
+  - can see their messages
+  - can see company-dashboards
+- manage subscription plans
+- manage billings and revenue
+
+__________
+
+admin (head of company)
+- can do all works done by agent
+- head of company
+- can create/pause/delete admins
+- can see company-dashboard
+- can send messages
+- can run compaigns
+
+__________
+
+agent (users of a company)
+- can send messages
+- # run campaigns
+
+customers:
+- # just users / customers of a company
+
+
+
+=============== UI MENUS / FUNCTIONAL REQUIREMENTS ======================
+super-admin menus: (along with these, he can see menus of admins)
+
+dashboard:
+- show tenants stats (which tenant has highest message, highest campaigns, highest customer , like top 3 performing tenants this month, whose plan is going to end - notify )
+- show message stats (no of msgs sent, delivered, read, got replies)
+- show template stats (which template is performing good)
+- show campaign stats ( which campaign has highest engagement )
+- show revenue stats (which plan is most used)
+- show customer stats (active customers, inactive customers)
+- company stats (Company Health Score, activity, engagement, payments, Messages per day, Active users)
+
+subscription-plans:
+- cruds (basic, pro, enterprise, coupons/discounts)
+
+companies
+- crud
+
+__________
+
+admin menus: (along with these, he can see menus of agents)
+
+Reports: (visible to only admin)
+- current subscription details
+- message stats (no of messages sent, delivered, replied, failed)
+- customers stats (active, inactive, new )
+- Campaign Performance
+- Template Performance
+- Agent stats - active, inactive, more engagement
+
+agents: (visible to only admin)
+- table list
+- crud - actions(edit, soft-delete, hard-delete, chats, compaigns, reports)
+- filters (by department, sorting by name etc)
+- pagination
+
+subscriptions history:
+-(visible to only admin)
+
+payment history:
+-(visible to only admin)
+
+===============================================
+agent menus:
+
+groups: (visible to all)
+- list
+- crud
+- filters (by name, department)
+- pagination
+
+customers: (visible to all)
+- list
+- crud (edit, hard-delete, chats)
+- filters (by name, phone, city, group)
+- pagination
+- bulk upload
+
+templates: (visible to all)
+- table list
+- crud
+- filter by (department, created by, state)
+- pagination
+
+chats: (visible to all)
+- users list on left half
+  - filter by groups, city, sort by latest messages
+- message conversations on the right half
+- support (text, image, document, template messages, quick messages)
+- infinite scroll
+- customer details tab to the right (when clicked on show details)
+
+campaigns: (visible to all)
+- crud
+
+workflows: (visible to all)
+- cruds
+
+===============================================
+
+
+
+=============== FEATURES / NON-FUNCTIONAL REQUIREMENTS ======================
+
+1. modular
+2. readable
+3. scalable
+4. follow system design principles
+5. high availability
+6. **\*** low latency
+
+=============== TECH STACK ======================
+Frontend:
+Next.js + typescript + MUI (custom theme, dark, light mode), React Query (TanStack Query), zustand (state management)
+
+src/
+│
+├── app/ # Next.js App Router
+│ ├── (auth)/
+│ │ ├── login/
+│ │ ├── signup/
+│ │
+│ ├── (dashboard)/ # Protected routes
+│ │ ├── layout.tsx
+│ │ ├── page.tsx
+│ │
+│ │ ├── super-admin/ # Platform owner
+│ │ │ ├── dashboard/
+│ │ │ ├── companies/
+│ │ │ ├── subscriptions/
+│ │ │ ├── billing/
+│ │ │
+│ │ ├── admin/ # Company admin
+│ │ │ ├── dashboard/
+│ │ │ ├── reports/
+│ │ │ ├── agents/
+│ │ │ ├── billing/
+│ │ │
+│ │ ├── agent/ # Operational user
+│ │ ├── groups/
+│ │ ├── customers/
+│ │ ├── templates/
+│ │ ├── chats/
+│ │ ├── campaigns/
+│ │ ├── workflows/
+│
+├── components/ # 🔁 UI layer (IMPORTANT split)
+│ │
+│ ├── ui/ # Pure reusable UI
+│ │ ├── Button.tsx
+│ │ ├── Input.tsx
+│ │ ├── Modal.tsx
+│ │ ├── Loader.tsx
+│ │
+│ ├── layout/ # Layout components
+│ │ ├── Sidebar.tsx
+│ │ ├── Navbar.tsx
+│ │ ├── PageContainer.tsx
+│ │
+│ ├── table/
+│ │ ├── DataTable.tsx
+│ │ ├── TablePagination.tsx
+│ │
+│ ├── form/
+│ │ ├── FormInput.tsx
+│ │ ├── FormSelect.tsx
+│ │
+│ ├── charts/
+│ │ ├── LineChart.tsx
+│ │ ├── BarChart.tsx
+│ │
+│ ├── feature/ # ⚠️ Feature-specific UI (your idea refined)
+│ ├── campaigns/
+│ │ ├── CampaignTable.tsx
+│ │ ├── CampaignForm.tsx
+│ │
+│ ├── chats/
+│ │ ├── ChatWindow.tsx
+│ │ ├── MessageBubble.tsx
+│ │
+│ ├── customers/
+│ │ ├── CustomerTable.tsx
+│ │ ├── CustomerForm.tsx
+│
+├── lib/ # Core utilities / configs
+│ ├── api-client.ts
+│ ├── auth.ts
+│ ├── permissions.ts
+│ ├── constants.ts
+│ ├── roles.ts
+│
+├── hooks/ # Global reusable hooks
+│ ├── useAuth.ts
+│ ├── usePermissions.ts
+│ ├── useDebounce.ts
+│
+├── services/ # API layer (centralized)
+│ ├── auth.service.ts
+│ ├── user.service.ts
+│ ├── campaign.service.ts
+│ ├── chat.service.ts
+│ ├── customer.service.ts
+│
+├── store/ # Zustand stores
+│ ├── auth.store.ts
+│ ├── chat.store.ts
+│ ├── ui.store.ts
+│
+├── types/ # Global types
+│ ├── auth.types.ts
+│ ├── user.types.ts
+│ ├── campaign.types.ts
+│ ├── chat.types.ts
+│
+├── config/
+│ ├── env.ts
+│ ├── routes.ts
+│
+├── styles/
+│ ├── globals.css
+│ ├── theme.ts # MUI theme / design system
+
+
+__________
+
+
+Backend:
+Node + typescript + express, message queues (BullMQ), worker_threads if required
+
+src/
+│
+├── server.ts
+├── app.ts
+│
+├── routes/ # Route definitions
+│ ├── index.routes.ts # combine all routes
+│ ├── auth.routes.ts
+│ ├── admin.routes.ts
+│ ├── super-admin.routes.ts
+│ ├── customer.routes.ts
+│ ├── campaign.routes.ts
+│ ├── chat.routes.ts
+│ ├── template.routes.ts
+│ ├── group.routes.ts
+│
+├── controllers/ # Handles req/res
+│ ├── auth.controller.ts
+│ ├── admin.controller.ts
+│ ├── super-admin.controller.ts
+│ ├── customer.controller.ts
+│ ├── campaign.controller.ts
+│ ├── chat.controller.ts
+│ ├── template.controller.ts
+│ ├── group.controller.ts
+│
+├── services/ # Business logic
+│ ├── auth.service.ts
+│ ├── user.service.ts # admins + agents
+│ ├── company.service.ts
+│ ├── customer.service.ts
+│ ├── campaign.service.ts
+│ ├── chat.service.ts
+│ ├── message.service.ts
+│ ├── template.service.ts
+│ ├── group.service.ts
+│ ├── workflow.service.ts
+│ ├── billing.service.ts
+│ ├── subscription.service.ts
+│
+├── middleware/ # Express middleware
+│ ├── auth.middleware.ts
+│ ├── role.middleware.ts
+│ ├── error.middleware.ts
+│
+├── validations/ # Zod / Joi schemas
+│ ├── auth.validation.ts
+│ ├── campaign.validation.ts
+│ ├── customer.validation.ts
+│
+├── utils/ # Pure functions
+│ ├── logger.ts
+│ ├── pagination.ts
+│ ├── response.ts
+│
+├── constants/
+│ ├── roles.ts
+│ ├── permissions.ts
+│
+├── config/
+│ ├── env.ts
+│ ├── db.ts
+│ ├── redis.ts
+│
+├── jobs/ # Background jobs (IMPORTANT)
+│ ├── queues/
+│ │ ├── campaign.queue.ts
+│ │ ├── message.queue.ts
+│ │
+│ ├── workers/
+│ │ ├── campaign.worker.ts
+│ │ ├── message.worker.ts
+│
+├── websockets/ # Real-time chat
+│ ├── socket.ts
+│ ├── chat.handler.ts
+│
+├── types/
+│ ├── global.types.ts
+│
+└── docs/
+
+database:
+postgresql, redis (these hosted in docker containers - should take backup at regular intervals - weekly)
+s3 (for file storage)
+
+Authentication:
+HttpOnly cookie-based auth
+
+=============== SYSTEM DESIGN PRINCIPLES TO FOLLOW ======================
+Frontend Ideas:
+
+- premium designs with best look and feel
+- code splitting
+- API Optimization
+- Memoize components when needed
+- use useMemo, useCallbacks
+- Use react-virtual (tanstack-virtualization) whereever needed
+- define custom hooks wherever needed
+- Reduce JS size , Avoid heavy libraries, Import only what you use
+- Image Optimization
+- Debounced search
+- define Reusable components
+- Error Handling (use toasts)
+- Empty states No data → show illustration + CTA
+  -Smooth transitions
+  -No layout shifts
+  -Consistent button styles
+  -Proper loading states
+  -Fast feedback on actions
+
+👉 Fast > fancy
+👉 Consistency > creativity
+👉 Simplicity > complexity
+
+Backend Ideas:
+
+1. DRY
+2. KISS
+3. YAGNI
+4. try to push the non-critical tasks (reporting, analytics, etc) to queue
+5. Focus on very quick responding system, try to use caching

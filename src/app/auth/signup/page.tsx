@@ -1,6 +1,7 @@
 "use client";
 
 import AuthShowcase from "@/components/auth/AuthShowcase";
+import { getDefaultRouteForRole, normalizeRole } from "@/lib/rbac";
 import { signUp } from "@/services/auth/auth.api";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
@@ -83,8 +84,15 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      await signUp({ companyName, companyPhone, name, email, password, rememberMe });
-      router.push("/dashboard");
+      const { user } = await signUp({
+        companyName,
+        companyPhone,
+        name,
+        email,
+        password,
+        rememberMe
+      });
+      router.push(getDefaultRouteForRole(normalizeRole(user)));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign-up failed";
       setErrorMessage(message);
