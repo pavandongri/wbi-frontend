@@ -73,6 +73,11 @@ export function getNavItemsForRole(role: AuthRole): NavItemDef[] {
   return NAV_ITEMS.filter((item) => allowed.has(item.path));
 }
 
+/** Company admins CRUD + super_admin (platform) may manage company admins; staff may not. */
+export function isCompanyAdminRole(role: AuthRole): boolean {
+  return role === "admin" || role === "super_admin";
+}
+
 export function canRoleAccessPathname(role: AuthRole, pathname: string): boolean {
   const path = pathname.split("?")[0];
   if (path === "/" || path.startsWith("/profile") || path.startsWith("/auth")) return true;

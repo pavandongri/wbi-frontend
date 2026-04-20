@@ -54,7 +54,16 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       >
         <Toolbar />
 
-        <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            /** Uniform inset; values are 2× the previous top step (1.25/1.5/2 → 2.5/3/4). */
+            pt: { xs: 2.5, sm: 3, md: 4 },
+            pr: { xs: 2.5, sm: 3, md: 4 },
+            pl: { xs: 2.5, sm: 3, md: 4 },
+            pb: { xs: 2.5, sm: 3, md: 4 }
+          }}
+        >
           <AccessGuard>{children}</AccessGuard>
         </Box>
 

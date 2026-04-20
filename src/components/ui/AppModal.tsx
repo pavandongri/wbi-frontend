@@ -32,6 +32,8 @@ export type AppModalProps = {
   closeOnBackdrop?: boolean;
   /** Hide the top-right close control */
   hideCloseButton?: boolean;
+  /** Override dialog paper `borderRadius` (e.g. `${12}px` to match rect toolbar buttons). */
+  paperBorderRadius?: string | number;
 };
 
 /**
@@ -48,7 +50,8 @@ export default function AppModal({
   fullWidth = true,
   closeOnEscape = true,
   closeOnBackdrop = true,
-  hideCloseButton = false
+  hideCloseButton = false,
+  paperBorderRadius
 }: AppModalProps) {
   return (
     <Dialog
@@ -69,7 +72,7 @@ export default function AppModal({
           elevation: 0,
           sx: {
             ...glassSurface.panel,
-            borderRadius: 3,
+            borderRadius: paperBorderRadius ?? 3,
             overflow: "hidden"
           }
         }
