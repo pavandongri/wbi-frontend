@@ -1,7 +1,10 @@
 "use client";
 
 import { StatusChip } from "@/components/ui";
-import { ADMINS_CONTROL_RADIUS_PX } from "@/features/admins/adminsUiTokens";
+import {
+  ADMINS_CONTROL_RADIUS_PX,
+  ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX
+} from "@/features/admins/adminsUiTokens";
 import type { UsersSortBy } from "@/types/users.types";
 import type { UserRow } from "@/types/users.types";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -160,8 +163,13 @@ function AdminsTableSectionComponent({
         transition: "opacity 160ms ease"
       }}
     >
-      <TableContainer>
-        <Table size="medium" sx={{ minWidth: 720 }}>
+      <TableContainer
+        sx={{
+          maxHeight: ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX,
+          overflow: "auto"
+        }}
+      >
+        <Table size="medium" stickyHeader sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow
               sx={{
