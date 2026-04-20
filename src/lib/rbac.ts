@@ -1,8 +1,8 @@
 import type { User } from "@/types/common.types";
 import { type AuthRole, isAuthRole } from "@/types/roles";
 
-const SUPER = ["/dashboard", "/subscription-plans", "/companies"] as const;
-const ADMIN = ["/reports", "/staff", "/subscriptions", "/payments"] as const;
+const SUPER = ["/dashboard", "/subscription-plans", "/companies", "/super-admins"] as const;
+const ADMIN = ["/reports", "/admins", "/staff", "/subscriptions", "/payments"] as const;
 const STAFF = [
   "/groups",
   "/customers",
@@ -31,8 +31,10 @@ export type NavIconKey =
   | "subscriptionPlans"
   | "subscriptions"
   | "companies"
+  | "superAdmins"
   | "reports"
   | "staff"
+  | "admins"
   | "payments"
   | "groups"
   | "customers"
@@ -48,7 +50,9 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
   { path: "/dashboard", label: "Dashboard", icon: "dashboard" },
   { path: "/subscription-plans", label: "Subscription plans", icon: "subscriptionPlans" },
   { path: "/companies", label: "Companies", icon: "companies" },
+  { path: "/super-admins", label: "Super admins", icon: "superAdmins" },
   { path: "/reports", label: "Reports", icon: "reports" },
+  { path: "/admins", label: "Admins", icon: "admins" },
   { path: "/staff", label: "Staff", icon: "staff" },
   { path: "/subscriptions", label: "Subscriptions", icon: "subscriptions" },
   { path: "/payments", label: "Payments", icon: "payments" },

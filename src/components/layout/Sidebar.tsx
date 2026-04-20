@@ -16,6 +16,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import { alpha, useTheme } from "@mui/material/styles";
 
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
@@ -30,8 +31,9 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import PersonIcon from "@mui/icons-material/Person";
-import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
+import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,7 +50,9 @@ const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   subscriptionPlans: <LayersOutlinedIcon />,
   subscriptions: <SubscriptionsOutlinedIcon />,
   companies: <BusinessOutlinedIcon />,
+  superAdmins: <VerifiedUserOutlinedIcon />,
   reports: <AssessmentOutlinedIcon />,
+  admins: <AdminPanelSettingsOutlinedIcon />,
   staff: <SupportAgentOutlinedIcon />,
   payments: <PaymentsOutlinedIcon />,
   groups: <GroupsOutlinedIcon />,
