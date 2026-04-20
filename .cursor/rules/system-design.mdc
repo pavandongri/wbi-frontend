@@ -17,10 +17,10 @@ alwaysApply: false
 
 - dashboard
 - reports
-- agents
+- staff
 - billing
 
-### agent
+### staff
 
 - groups
 - customers

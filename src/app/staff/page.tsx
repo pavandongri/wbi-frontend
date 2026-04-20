@@ -2,6 +2,6 @@
 
 import PlaceholderPage from "@/components/pages/PlaceholderPage";
 
-export default function AgentsPage() {
-  return <PlaceholderPage title="Agents" />;
+export default function StaffPage() {
+  return <PlaceholderPage title="Staff" />;
 }

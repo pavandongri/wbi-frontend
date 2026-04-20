@@ -2,8 +2,8 @@ import type { User } from "@/types/common.types";
 import { type AuthRole, isAuthRole } from "@/types/roles";
 
 const SUPER = ["/dashboard", "/subscription-plans", "/companies"] as const;
-const ADMIN = ["/reports", "/agents", "/subscriptions", "/payments"] as const;
-const AGENT = [
+const ADMIN = ["/reports", "/staff", "/subscriptions", "/payments"] as const;
+const STAFF = [
   "/groups",
   "/customers",
   "/templates",
@@ -12,18 +12,18 @@ const AGENT = [
   "/workflows"
 ] as const;
 
-const ALL = [...SUPER, ...ADMIN, ...AGENT] as const;
+const ALL = [...SUPER, ...ADMIN, ...STAFF] as const;
 
 const ROLE_PREFIXES: Record<AuthRole, readonly string[]> = {
   super_admin: ALL,
-  admin: [...ADMIN, ...AGENT],
-  agent: [...AGENT]
+  admin: [...ADMIN, ...STAFF],
+  staff: [...STAFF]
 };
 
 const PREFIX_SETS: Record<AuthRole, ReadonlySet<string>> = {
   super_admin: new Set(ALL),
-  admin: new Set([...ADMIN, ...AGENT]),
-  agent: new Set(AGENT)
+  admin: new Set([...ADMIN, ...STAFF]),
+  staff: new Set(STAFF)
 };
 
 export type NavIconKey =
@@ -32,7 +32,7 @@ export type NavIconKey =
   | "subscriptions"
   | "companies"
   | "reports"
-  | "agents"
+  | "staff"
   | "payments"
   | "groups"
   | "customers"
@@ -49,7 +49,7 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
   { path: "/subscription-plans", label: "Subscription plans", icon: "subscriptionPlans" },
   { path: "/companies", label: "Companies", icon: "companies" },
   { path: "/reports", label: "Reports", icon: "reports" },
-  { path: "/agents", label: "Agents", icon: "agents" },
+  { path: "/staff", label: "Staff", icon: "staff" },
   { path: "/subscriptions", label: "Subscriptions", icon: "subscriptions" },
   { path: "/payments", label: "Payments", icon: "payments" },
   { path: "/groups", label: "Groups", icon: "groups" },
@@ -61,7 +61,7 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
 ];
 
 export function normalizeRole(user: User | null | undefined): AuthRole {
-  return isAuthRole(user?.role) ? user!.role! : "agent";
+  return isAuthRole(user?.role) ? user!.role! : "staff";
 }
 
 export function getNavItemsForRole(role: AuthRole): NavItemDef[] {

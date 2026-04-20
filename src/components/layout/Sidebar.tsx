@@ -49,7 +49,7 @@ const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   subscriptions: <SubscriptionsOutlinedIcon />,
   companies: <BusinessOutlinedIcon />,
   reports: <AssessmentOutlinedIcon />,
-  agents: <SupportAgentOutlinedIcon />,
+  staff: <SupportAgentOutlinedIcon />,
   payments: <PaymentsOutlinedIcon />,
   groups: <GroupsOutlinedIcon />,
   customers: <PeopleOutlineIcon />,

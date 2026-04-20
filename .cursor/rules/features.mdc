@@ -14,10 +14,10 @@ alwaysApply: false
 ## Admin
 
 - Reports
-- Manage agents
+- Manage staff
 - Billing
 
-## Agent
+## Staff
 
 - Groups management
 - Customers management (with bulk upload)
