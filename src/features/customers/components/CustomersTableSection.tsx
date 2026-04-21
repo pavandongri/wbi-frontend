@@ -4,14 +4,14 @@ import {
   ADMINS_CONTROL_RADIUS_PX,
   ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX
 } from "@/features/admins/adminsUiTokens";
-import type { GroupRow, GroupsSortBy } from "@/types/groups.types";
+import type { CustomerRow, CustomersSortBy } from "@/types/customers.types";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
+import GroupWorkRoundedIcon from "@mui/icons-material/GroupWorkRounded";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import {
   Box,
   IconButton,
@@ -30,26 +30,31 @@ import {
 } from "@mui/material";
 import { memo, useCallback } from "react";
 
-type GroupsTableSectionProps = {
-  rows: GroupRow[];
+type CustomersTableSectionProps = {
+  rows: CustomerRow[];
   total: number;
   page: number;
   limit: number;
-  sortBy: GroupsSortBy;
+  sortBy: CustomersSortBy;
   sortOrder: "asc" | "desc";
   isFetching: boolean;
   isInitialLoading: boolean;
-  onSort: (field: GroupsSortBy) => void;
+  onSort: (field: CustomersSortBy) => void;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
-  onEdit: (group: GroupRow) => void;
-  onDelete: (group: GroupRow) => void;
-  onManageCustomers: (group: GroupRow) => void;
+  onEdit: (customer: CustomerRow) => void;
+  onDelete: (customer: CustomerRow) => void;
+  onManageGroups: (customer: CustomerRow) => void;
 };
 
-const HEAD: ReadonlyArray<{ id: Extract<GroupsSortBy, "name" | "description">; label: string }> = [
+const HEAD: ReadonlyArray<{
+  id: Extract<CustomersSortBy, "name" | "phone" | "email" | "city">;
+  label: string;
+}> = [
   { id: "name", label: "Name" },
-  { id: "description", label: "Description" }
+  { id: "phone", label: "Phone" },
+  { id: "email", label: "Email" },
+  { id: "city", label: "City" }
 ];
 
 function PaginationActions(props: {
@@ -103,7 +108,7 @@ function PaginationActions(props: {
   );
 }
 
-function GroupsTableSectionComponent({
+function CustomersTableSectionComponent({
   rows,
   total,
   page,
@@ -117,8 +122,8 @@ function GroupsTableSectionComponent({
   onLimitChange,
   onEdit,
   onDelete,
-  onManageCustomers
-}: GroupsTableSectionProps) {
+  onManageGroups
+}: CustomersTableSectionProps) {
   const theme = useTheme();
   const muiPage = Math.max(0, page - 1);
   const skeletonRow = isInitialLoading;
@@ -145,7 +150,7 @@ function GroupsTableSectionComponent({
       }}
     >
       <TableContainer sx={{ maxHeight: ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX, overflow: "auto" }}>
-        <Table size="medium" stickyHeader sx={{ minWidth: 560 }}>
+        <Table size="medium" stickyHeader sx={{ minWidth: 820 }}>
           <TableHead>
             <TableRow
               sx={{
@@ -199,37 +204,47 @@ function GroupsTableSectionComponent({
                     variant="body2"
                     fontWeight={600}
                   >
-                    No groups match your filters yet.
+                    No customers match your filters yet.
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : null}
 
             {!skeletonRow
-              ? rows.map((g) => (
-                  <TableRow key={g.id} hover sx={{ "&:last-of-type td": { borderBottom: 0 } }}>
+              ? rows.map((c) => (
+                  <TableRow key={c.id} hover sx={{ "&:last-of-type td": { borderBottom: 0 } }}>
                     <TableCell>
                       <Typography variant="body2" fontWeight={700} letterSpacing="-0.01em">
-                        {g.name}
+                        {c.name}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight={600} color="text.secondary">
-                        {g.description?.trim() ? g.description : "—"}
+                        {c.phone}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600} color="text.secondary">
+                        {c.email?.trim() ? c.email : "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600} color="text.secondary">
+                        {c.city?.trim() ? c.city : "—"}
                       </Typography>
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                       <IconButton
-                        aria-label={`Edit ${g.name}`}
-                        onClick={() => onEdit(g)}
+                        aria-label={`Edit ${c.name}`}
+                        onClick={() => onEdit(c)}
                         size="small"
                         sx={{ borderRadius: 2, border: "1px solid rgba(17, 27, 33, 0.08)" }}
                       >
                         <EditRoundedIcon fontSize="small" />
                       </IconButton>
                       <IconButton
-                        aria-label={`Customers for ${g.name}`}
-                        onClick={() => onManageCustomers(g)}
+                        aria-label={`Groups for ${c.name}`}
+                        onClick={() => onManageGroups(c)}
                         size="small"
                         sx={{
                           ml: 0.75,
@@ -237,11 +252,11 @@ function GroupsTableSectionComponent({
                           border: "1px solid rgba(17, 27, 33, 0.08)"
                         }}
                       >
-                        <PeopleRoundedIcon fontSize="small" />
+                        <GroupWorkRoundedIcon fontSize="small" />
                       </IconButton>
                       <IconButton
-                        aria-label={`Delete ${g.name}`}
-                        onClick={() => onDelete(g)}
+                        aria-label={`Delete ${c.name}`}
+                        onClick={() => onDelete(c)}
                         size="small"
                         sx={{
                           ml: 0.75,
@@ -277,4 +292,4 @@ function GroupsTableSectionComponent({
   );
 }
 
-export default memo(GroupsTableSectionComponent);
+export default memo(CustomersTableSectionComponent);
