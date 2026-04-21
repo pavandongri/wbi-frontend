@@ -52,7 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         open={state.open}
         onClose={closeToast}
         autoHideDuration={state.open ? state.duration : undefined}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert
           onClose={closeToast}
