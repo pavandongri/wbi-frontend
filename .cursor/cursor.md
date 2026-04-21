@@ -8,7 +8,7 @@ This is a WhatsApp Business SaaS frontend.
 - Role-based UI:
   - super-admin
   - admin
-  - agent
+  - staff
 
 ## Tech Stack
 

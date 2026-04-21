@@ -1,8 +1,10 @@
 "use client";
 
+import { useToast } from "@/components/ui";
 import { logoutUser } from "@/helpers/common.helpers";
 import {
   Box,
+  CircularProgress,
   Drawer,
   IconButton,
   List,
@@ -16,6 +18,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import { alpha, useTheme } from "@mui/material/styles";
 
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
@@ -30,12 +33,13 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import PersonIcon from "@mui/icons-material/Person";
-import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
+import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 
 import type { NavIconKey } from "@/lib/rbac";
 import { getNavItemsForRole, normalizeRole } from "@/lib/rbac";
@@ -48,8 +52,10 @@ const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   subscriptionPlans: <LayersOutlinedIcon />,
   subscriptions: <SubscriptionsOutlinedIcon />,
   companies: <BusinessOutlinedIcon />,
+  superAdmins: <VerifiedUserOutlinedIcon />,
   reports: <AssessmentOutlinedIcon />,
-  agents: <SupportAgentOutlinedIcon />,
+  admins: <AdminPanelSettingsOutlinedIcon />,
+  staff: <SupportAgentOutlinedIcon />,
   payments: <PaymentsOutlinedIcon />,
   groups: <GroupsOutlinedIcon />,
   customers: <PeopleOutlineIcon />,
@@ -91,6 +97,8 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const theme = useTheme();
+  const toast = useToast();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const sidebarEasing = "cubic-bezier(0.22, 1, 0.36, 1)";
   const drawerTransitionDuration = 320;
   const labelTransitionDuration = 220;
@@ -134,6 +142,20 @@ export default function Sidebar({
       whiteSpace: "nowrap"
     }
   });
+
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logoutUser();
+    } catch {
+      setIsLoggingOut(false);
+      toast.showToast({
+        message: "Could not log out right now. Please try again.",
+        severity: "error"
+      });
+    }
+  }, [isLoggingOut, toast]);
 
   const renderDrawerContent = ({ collapsed }: { collapsed: boolean }) => (
     <Box sx={{ height: "100%", px: 1.5, pt: 1.5, pb: 2, display: "flex", flexDirection: "column" }}>
@@ -206,7 +228,8 @@ export default function Sidebar({
       >
         <Tooltip title={collapsed ? "Logout" : ""} placement="right">
           <ListItemButton
-            onClick={logoutUser}
+            onClick={handleLogout}
+            disabled={isLoggingOut}
             sx={{
               minHeight: "100%",
               width: "100%",
@@ -231,10 +254,17 @@ export default function Sidebar({
                 })
               }}
             >
-              <LogoutRoundedIcon />
+              {isLoggingOut ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : (
+                <LogoutRoundedIcon />
+              )}
             </ListItemIcon>
 
-            <ListItemText primary="Logout" sx={getItemLabelStyles(collapsed)} />
+            <ListItemText
+              primary={isLoggingOut ? "Logging out..." : "Logout"}
+              sx={getItemLabelStyles(collapsed)}
+            />
           </ListItemButton>
         </Tooltip>
       </Box>

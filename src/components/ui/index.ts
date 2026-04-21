@@ -4,5 +4,7 @@ export { default as DataTable } from "./DataTable";
 export type { DataTableColumn, DataTableProps, SortOrder } from "./DataTable";
 export { default as GlassLoader } from "./GlassLoader";
 export type { GlassLoaderProps } from "./GlassLoader";
+export { default as StatusChip } from "./StatusChip";
+export type { StandardStatus, StatusChipProps } from "./StatusChip";
 export { ToastProvider, useToast } from "./toast/ToastProvider";
 export type { ShowToastOptions, ToastSeverity } from "./toast/ToastProvider";

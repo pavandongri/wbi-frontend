@@ -2,7 +2,7 @@
 Roles:
 super-admin
 admin
-agent
+staff
 
 ===============================================
 users:
@@ -21,7 +21,7 @@ super-admin (who manages the full app)
 __________
 
 admin (head of company)
-- can do all works done by agent
+- can do all works done by staff
 - head of company
 - can create/pause/delete admins
 - can see company-dashboard
@@ -30,7 +30,7 @@ admin (head of company)
 
 __________
 
-agent (users of a company)
+staff (users of a company)
 - can send messages
 - # run campaigns
 
@@ -59,7 +59,7 @@ companies
 
 __________
 
-admin menus: (along with these, he can see menus of agents)
+admin menus: (along with these, he can see menus of staffs)
 
 Reports: (visible to only admin)
 - current subscription details
@@ -67,9 +67,9 @@ Reports: (visible to only admin)
 - customers stats (active, inactive, new )
 - Campaign Performance
 - Template Performance
-- Agent stats - active, inactive, more engagement
+- staff stats - active, inactive, more engagement
 
-agents: (visible to only admin)
+staffs: (visible to only admin)
 - table list
 - crud - actions(edit, soft-delete, hard-delete, chats, compaigns, reports)
 - filters (by department, sorting by name etc)
@@ -82,7 +82,7 @@ payment history:
 -(visible to only admin)
 
 ===============================================
-agent menus:
+staff menus:
 
 groups: (visible to all)
 - list
@@ -154,10 +154,10 @@ src/
 │ │ ├── admin/ # Company admin
 │ │ │ ├── dashboard/
 │ │ │ ├── reports/
-│ │ │ ├── agents/
+│ │ │ ├── staffs/
 │ │ │ ├── billing/
 │ │ │
-│ │ ├── agent/ # Operational user
+│ │ ├── staff/ # Operational user
 │ │ ├── groups/
 │ │ ├── customers/
 │ │ ├── templates/
@@ -276,7 +276,7 @@ src/
 │
 ├── services/ # Business logic
 │ ├── auth.service.ts
-│ ├── user.service.ts # admins + agents
+│ ├── user.service.ts # admins + staffs
 │ ├── company.service.ts
 │ ├── customer.service.ts
 │ ├── campaign.service.ts

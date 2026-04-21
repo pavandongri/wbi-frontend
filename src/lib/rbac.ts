@@ -1,9 +1,9 @@
 import type { User } from "@/types/common.types";
 import { type AuthRole, isAuthRole } from "@/types/roles";
 
-const SUPER = ["/dashboard", "/subscription-plans", "/companies"] as const;
-const ADMIN = ["/reports", "/agents", "/subscriptions", "/payments"] as const;
-const AGENT = [
+const SUPER = ["/dashboard", "/subscription-plans", "/companies", "/super-admins"] as const;
+const ADMIN = ["/reports", "/admins", "/staff", "/subscriptions", "/payments"] as const;
+const STAFF = [
   "/groups",
   "/customers",
   "/templates",
@@ -12,18 +12,18 @@ const AGENT = [
   "/workflows"
 ] as const;
 
-const ALL = [...SUPER, ...ADMIN, ...AGENT] as const;
+const ALL = [...SUPER, ...ADMIN, ...STAFF] as const;
 
 const ROLE_PREFIXES: Record<AuthRole, readonly string[]> = {
   super_admin: ALL,
-  admin: [...ADMIN, ...AGENT],
-  agent: [...AGENT]
+  admin: [...ADMIN, ...STAFF],
+  staff: [...STAFF]
 };
 
 const PREFIX_SETS: Record<AuthRole, ReadonlySet<string>> = {
   super_admin: new Set(ALL),
-  admin: new Set([...ADMIN, ...AGENT]),
-  agent: new Set(AGENT)
+  admin: new Set([...ADMIN, ...STAFF]),
+  staff: new Set(STAFF)
 };
 
 export type NavIconKey =
@@ -31,8 +31,10 @@ export type NavIconKey =
   | "subscriptionPlans"
   | "subscriptions"
   | "companies"
+  | "superAdmins"
   | "reports"
-  | "agents"
+  | "staff"
+  | "admins"
   | "payments"
   | "groups"
   | "customers"
@@ -48,8 +50,10 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
   { path: "/dashboard", label: "Dashboard", icon: "dashboard" },
   { path: "/subscription-plans", label: "Subscription plans", icon: "subscriptionPlans" },
   { path: "/companies", label: "Companies", icon: "companies" },
+  { path: "/super-admins", label: "Super admins", icon: "superAdmins" },
   { path: "/reports", label: "Reports", icon: "reports" },
-  { path: "/agents", label: "Agents", icon: "agents" },
+  { path: "/admins", label: "Admins", icon: "admins" },
+  { path: "/staff", label: "Staff", icon: "staff" },
   { path: "/subscriptions", label: "Subscriptions", icon: "subscriptions" },
   { path: "/payments", label: "Payments", icon: "payments" },
   { path: "/groups", label: "Groups", icon: "groups" },
@@ -61,12 +65,17 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
 ];
 
 export function normalizeRole(user: User | null | undefined): AuthRole {
-  return isAuthRole(user?.role) ? user!.role! : "agent";
+  return isAuthRole(user?.role) ? user!.role! : "staff";
 }
 
 export function getNavItemsForRole(role: AuthRole): NavItemDef[] {
   const allowed = PREFIX_SETS[role];
   return NAV_ITEMS.filter((item) => allowed.has(item.path));
+}
+
+/** Company admins CRUD + super_admin (platform) may manage company admins; staff may not. */
+export function isCompanyAdminRole(role: AuthRole): boolean {
+  return role === "admin" || role === "super_admin";
 }
 
 export function canRoleAccessPathname(role: AuthRole, pathname: string): boolean {

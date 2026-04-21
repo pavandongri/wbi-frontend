@@ -32,13 +32,8 @@ export function removeUser(): void {
 export async function logoutUser(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  try {
-    await signOut();
-  } catch {
-    console.error("Failed to sign out");
-  } finally {
-    removeUser();
-    clearAuthClientSession();
-    window.location.href = "/";
-  }
+  await signOut();
+  removeUser();
+  clearAuthClientSession();
+  window.location.href = "/";
 }
