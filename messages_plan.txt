@@ -1,0 +1,244 @@
+| Category       | Rate (INR)     | Rate (USD approx.) |
+|----------------|----------------|--------------------|
+| Marketing      | ₹0.8631 / msg  | ~$0.0107           |
+| Utility        | ₹0.115 / msg   | ~$0.0014           |
+| Authentication | ₹0.115 / msg   | ~$0.0014           |
+| Service        | ₹0 (FREE)      | Free               |
+
+.env
+Marketing_Fee = 0.8631
+Marketing_Fee_margin = 0.4
+Utility_Fee = 0.115   
+Utility_Fee_margin = 0.4   
+
+
+subscription plans: 
+- name
+- description
+- price 
+- no of days
+
+subscriptions:
+- name, 
+- description
+- price
+- status (active, inactive, pending, cancelled, expired)
+- start_date
+- end_date
+- created_at
+- updated_at
+- company_id
+- subscription_plan_id
+
+- paid_marketing_messages
+- free_marketing_messages
+
+- paid_utility_messages
+- free_utility_messages
+
+- total_paid_messages
+- total_free_messages 
+
+- text_messages_count
+- image_messages_count
+- document_messages_count
+- video_messages_count
+- template_messages_count
+
+- total_messages
+
+
+payment_history: 
+- subscription_id
+- company_id
+- amount
+- amount_breakdown
+- status (paid, pending, cancelled, expired)
+- payment_date
+- payment_method
+- payment_reference
+- payment_gateway
+- payment_gateway_response
+- payment_gateway_response_code
+- payment_gateway_response_message
+- payment_gateway_response_data
+
+
+crons:
+- run every day at 6.00 am
+- check for subscriptions which ends in next 7 days and notify
+- check for subscriptions which ends in next 3 days and notify
+- check for subscriptions which ends in next 1 days and notify
+- check for subscriptions which are expired yesterday and create its payment_history and notify
+
+
+window_messages (this is required for free messages)
+- company_id 
+- customer_id
+- updated_at
+
+message_types:
+- text
+- image 
+- document
+- video
+- template
+- quick-reply-template-messages
+- cta-template-messages
+
+
+messages:
+- id
+- from
+- to 
+- body
+- category 
+- url
+- created_at
+- updated_at
+- company_id
+- customer_id
+- template_id
+- is_quick_reply_template
+- is_cta_template
+- message_type
+- status (sent, delivered, read, failed)
+- error_message
+- parent_message_id
+- scheduled_at
+
+template_messages:
+- body 
+- params []
+- is_quick_reply_template
+- is_cta_template
+- company_id
+- user_id
+- created_at 
+- updated_at 
+- is_meta_approved 
+- meta_rejection_reason
+- reply_buttons []
+- phone_numbers []
+- image_url 
+- video_url
+
+message_service:
+- sendMessage 
+- receiveMessage 
+- add_statistics_to_subscription 
+- getLatestMessageForCustomerCompany
+
+template_service:
+
+s3_service:
+
+
+
+
+
+==============
+
+templates 
+- name (only letters and _)
+- type (text, img, doc, video)
+- header (type == text only then this is allowed)
+- body (body params should not be in the starting or ending, use *bold*, use _italic_ )
+- media-url
+- variable_keys = [string]
+- variable_values = [string] // this follow the same order as it is there is variable_keys
+- footer 
+- website-button {
+  button-text, website-url
+} (max 2)
+- phone_number_button {
+  button-text, number
+} max(1)
+- quick_replies {
+  text
+} max(3)
+- status (pending, approved, rejected)
+- rejection_reason
+
+
+
+================
+
+template db: 
+
+{
+  id: uuid,
+
+  name: string,
+  language: string,
+  category: string, // MARKETING, UTILITY
+
+  // HEADER
+  header_type: "TEXT" | "IMAGE" | "VIDEO" | "DOCUMENT" | "LOCATION" | "NONE",
+  header_text: string,
+  header_media_url: string, // this is for storing our s3 link
+  header_media_handler: string, // this is to store meta handler link
+  header_example: string, // ["Summer Sale"]
+
+  // BODY
+  body: string,
+  body_example: string[][], // [["Mark", "Offer", "20%"]]
+
+  // FOOTER
+  footer: string,
+
+  buttons: [
+    {
+      type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER",
+      text: string,
+
+      // optional
+      url?: string,
+      url_type?: "STATIC" | "DYNAMIC",
+      phone_number?: string,
+
+      example?: string[] // for dynamic url
+    }
+  ],
+
+  status: "PENDING" | "APPROVED" | "REJECTED | "Deleted",
+  rejection_message: string,
+
+  company_id: companyIdRef,
+  created_by: userId,
+  created_at: timestamp,
+
+  updated_at: timestamp,
+
+  deleted_by: userId,
+  deleted_at: timestamp,
+
+  deleted_at_meta: boolean
+}
+
+
+message db: 
+{
+  from: string,
+  to: string,
+  body: string, / this is for normal messages
+
+  template_id:
+  template_header_params: string,
+  template_body_params: [string],
+
+  status: string; // "queued" | "sent" | "delivered" | "read" | "failed",
+  direction: string, // inbound | outbound 
+  failed_reason,
+
+  company_id: 
+  user_id,
+  cost: ,
+  
+
+  createdAt, 
+  sentAt, 
+  deliveredAt, 
+  readAt, 
+
+}
