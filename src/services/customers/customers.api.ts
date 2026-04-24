@@ -22,21 +22,21 @@ function buildListQuery(params: ListCustomersQuery): string {
 
 export async function listCustomers(params: ListCustomersQuery): Promise<PaginatedCustomers> {
   const qs = buildListQuery(params);
-  const res = await apiClient<ApiSuccessEnvelope<PaginatedCustomers>>(`/api/v1/customers?${qs}`, {
+  const res = await apiClient<ApiSuccessEnvelope<PaginatedCustomers>>(`/customers?${qs}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function getCustomer(id: string): Promise<CustomerRow> {
-  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>(`/api/v1/customers/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>(`/customers/${id}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function createCustomer(body: CreateCustomerBody): Promise<CustomerRow> {
-  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>("/api/v1/customers", {
+  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>("/customers", {
     method: "POST",
     body
   });
@@ -44,7 +44,7 @@ export async function createCustomer(body: CreateCustomerBody): Promise<Customer
 }
 
 export async function updateCustomer(id: string, body: UpdateCustomerBody): Promise<CustomerRow> {
-  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>(`/api/v1/customers/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<CustomerRow>>(`/customers/${id}`, {
     method: "PATCH",
     body
   });
@@ -52,11 +52,8 @@ export async function updateCustomer(id: string, body: UpdateCustomerBody): Prom
 }
 
 export async function deleteCustomer(id: string): Promise<DeleteCustomerResponse> {
-  const res = await apiClient<ApiSuccessEnvelope<DeleteCustomerResponse>>(
-    `/api/v1/customers/${id}`,
-    {
-      method: "DELETE"
-    }
-  );
+  const res = await apiClient<ApiSuccessEnvelope<DeleteCustomerResponse>>(`/customers/${id}`, {
+    method: "DELETE"
+  });
   return res.data;
 }

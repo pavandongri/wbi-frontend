@@ -36,6 +36,8 @@ export type AuthBackendEnvelope<TData> = {
 export type AuthSignupLoginData = {
   userId: string;
   companyId: string;
+  companyPhone?: string;
+  phoneNumber?: string;
   role: string;
   userDetails: {
     name: string;
@@ -48,6 +50,8 @@ export type AuthSignupLoginData = {
 export type AuthMeData = {
   userId: string;
   companyId: string;
+  companyPhone?: string;
+  phoneNumber?: string;
   role: string;
   name: string;
   email: string;

@@ -49,6 +49,20 @@ let theme = createTheme({
     action: {
       hover: "rgba(17, 27, 33, 0.04)",
       selected: "rgba(0, 168, 132, 0.12)"
+    },
+
+    /** Messaging surfaces — soft macOS-like greys + mint accent (matches primary family). */
+    chat: {
+      rail: "#EDF1F5",
+      railTint: "#E8F3EF",
+      pane: "#E3E8EE",
+      paneHighlight: "#EEF1F6",
+      inbound: "#FBFCFD",
+      inboundBorder: "rgba(55, 70, 80, 0.12)",
+      outbound: "#C5E8DA",
+      outboundText: "#063D32",
+      bubbleMeta: "rgba(6, 61, 50, 0.52)",
+      chrome: "rgba(255, 255, 255, 0.78)"
     }
   },
 

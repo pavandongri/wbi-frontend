@@ -37,3 +37,7 @@ export async function logoutUser(): Promise<void> {
   clearAuthClientSession();
   window.location.href = "/";
 }
+
+export function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, "");
+}

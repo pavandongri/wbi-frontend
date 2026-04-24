@@ -22,21 +22,21 @@ function buildListQuery(params: ListGroupsQuery): string {
 
 export async function listGroups(params: ListGroupsQuery): Promise<PaginatedGroups> {
   const qs = buildListQuery(params);
-  const res = await apiClient<ApiSuccessEnvelope<PaginatedGroups>>(`/api/v1/groups?${qs}`, {
+  const res = await apiClient<ApiSuccessEnvelope<PaginatedGroups>>(`/groups?${qs}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function getGroup(id: string): Promise<GroupRow> {
-  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>(`/api/v1/groups/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>(`/groups/${id}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function createGroup(body: CreateGroupBody): Promise<GroupRow> {
-  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>("/api/v1/groups", {
+  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>("/groups", {
     method: "POST",
     body
   });
@@ -44,7 +44,7 @@ export async function createGroup(body: CreateGroupBody): Promise<GroupRow> {
 }
 
 export async function updateGroup(id: string, body: UpdateGroupBody): Promise<GroupRow> {
-  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>(`/api/v1/groups/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<GroupRow>>(`/groups/${id}`, {
     method: "PATCH",
     body
   });
@@ -52,7 +52,7 @@ export async function updateGroup(id: string, body: UpdateGroupBody): Promise<Gr
 }
 
 export async function deleteGroup(id: string): Promise<DeleteGroupResponse> {
-  const res = await apiClient<ApiSuccessEnvelope<DeleteGroupResponse>>(`/api/v1/groups/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<DeleteGroupResponse>>(`/groups/${id}`, {
     method: "DELETE"
   });
   return res.data;

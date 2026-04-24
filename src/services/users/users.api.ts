@@ -22,21 +22,21 @@ function buildListQuery(params: ListUsersQuery): string {
 
 export async function listUsers(params: ListUsersQuery): Promise<PaginatedUsers> {
   const qs = buildListQuery(params);
-  const res = await apiClient<ApiSuccessEnvelope<PaginatedUsers>>(`/api/v1/users?${qs}`, {
+  const res = await apiClient<ApiSuccessEnvelope<PaginatedUsers>>(`/users?${qs}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function getUser(id: string): Promise<UserRow> {
-  const res = await apiClient<ApiSuccessEnvelope<UserRow>>(`/api/v1/users/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<UserRow>>(`/users/${id}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function createUser(body: CreateUserBody): Promise<UserRow> {
-  const res = await apiClient<ApiSuccessEnvelope<UserRow>>("/api/v1/users", {
+  const res = await apiClient<ApiSuccessEnvelope<UserRow>>("/users", {
     method: "POST",
     body
   });
@@ -44,7 +44,7 @@ export async function createUser(body: CreateUserBody): Promise<UserRow> {
 }
 
 export async function updateUser(id: string, body: UpdateUserBody): Promise<UserRow> {
-  const res = await apiClient<ApiSuccessEnvelope<UserRow>>(`/api/v1/users/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<UserRow>>(`/users/${id}`, {
     method: "PATCH",
     body
   });
@@ -52,7 +52,7 @@ export async function updateUser(id: string, body: UpdateUserBody): Promise<User
 }
 
 export async function deleteUser(id: string): Promise<DeleteUserResponse> {
-  const res = await apiClient<ApiSuccessEnvelope<DeleteUserResponse>>(`/api/v1/users/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<DeleteUserResponse>>(`/users/${id}`, {
     method: "DELETE"
   });
   return res.data;

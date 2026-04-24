@@ -22,9 +22,12 @@ import {
 let getMeInFlight: Promise<AuthApiResponse> | null = null;
 
 function userFromMe(data: AuthMeData): User {
+  const companyPhone = data.companyPhone ?? data.phoneNumber;
   return {
     id: data.userId,
     companyId: data.companyId,
+    companyPhone,
+    phoneNumber: companyPhone,
     name: data.name,
     email: data.email,
     role: isAuthRole(data.role) ? data.role : undefined
@@ -32,9 +35,12 @@ function userFromMe(data: AuthMeData): User {
 }
 
 function userFromSignupLogin(data: AuthSignupLoginData): User {
+  const companyPhone = data.companyPhone ?? data.phoneNumber;
   return {
     id: data.userId,
     companyId: data.companyId,
+    companyPhone,
+    phoneNumber: companyPhone,
     name: data.userDetails.name,
     email: data.userDetails.email,
     phone: data.userDetails.phone,
@@ -43,14 +49,14 @@ function userFromSignupLogin(data: AuthSignupLoginData): User {
 }
 
 async function fetchMeFromNetwork(): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthMeData>>("/api/v1/auth/me", {
+  const res = await apiClient<AuthBackendEnvelope<AuthMeData>>("/auth/me", {
     method: "GET"
   });
   return { user: userFromMe(res.data) };
 }
 
 export async function signIn(params: SignInPayload): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/api/v1/auth/login", {
+  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/auth/login", {
     method: "POST",
     body: { email: params.email, password: params.password }
   });
@@ -108,7 +114,7 @@ function buildSignUpBody(params: SignUpPayload): Record<string, string> {
 }
 
 export async function signUp(params: SignUpPayload): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/api/v1/auth/signup", {
+  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/auth/signup", {
     method: "POST",
     body: buildSignUpBody(params)
   });
@@ -122,7 +128,7 @@ export async function signUp(params: SignUpPayload): Promise<AuthApiResponse> {
 
 export async function signOut(): Promise<{ ok: true }> {
   try {
-    await apiClient<AuthBackendEnvelope<null>>("/api/v1/auth/logout", { method: "POST" });
+    await apiClient<AuthBackendEnvelope<null>>("/auth/logout", { method: "POST" });
   } finally {
     clearAuthClientSession();
   }

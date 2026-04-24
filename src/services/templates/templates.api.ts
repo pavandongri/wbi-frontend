@@ -31,21 +31,21 @@ function buildListQuery(params: ListTemplatesQuery): string {
 
 export async function listTemplates(params: ListTemplatesQuery): Promise<PaginatedTemplates> {
   const qs = buildListQuery(params);
-  const res = await apiClient<ApiSuccessEnvelope<PaginatedTemplates>>(`/api/v1/templates?${qs}`, {
+  const res = await apiClient<ApiSuccessEnvelope<PaginatedTemplates>>(`/templates?${qs}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function getTemplate(id: string): Promise<TemplateRow> {
-  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>(`/api/v1/templates/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>(`/templates/${id}`, {
     method: "GET"
   });
   return res.data;
 }
 
 export async function createTemplate(body: CreateTemplateBody): Promise<TemplateRow> {
-  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>("/api/v1/templates", {
+  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>("/templates", {
     method: "POST",
     body
   });
@@ -53,7 +53,7 @@ export async function createTemplate(body: CreateTemplateBody): Promise<Template
 }
 
 export async function updateTemplate(id: string, body: UpdateTemplateBody): Promise<TemplateRow> {
-  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>(`/api/v1/templates/${id}`, {
+  const res = await apiClient<ApiSuccessEnvelope<TemplateRow>>(`/templates/${id}`, {
     method: "PATCH",
     body
   });
@@ -61,12 +61,9 @@ export async function updateTemplate(id: string, body: UpdateTemplateBody): Prom
 }
 
 export async function deleteTemplate(id: string): Promise<DeleteTemplateResponse> {
-  const res = await apiClient<ApiSuccessEnvelope<DeleteTemplateResponse>>(
-    `/api/v1/templates/${id}`,
-    {
-      method: "DELETE"
-    }
-  );
+  const res = await apiClient<ApiSuccessEnvelope<DeleteTemplateResponse>>(`/templates/${id}`, {
+    method: "DELETE"
+  });
   return res.data;
 }
 
@@ -74,7 +71,7 @@ export async function sendTemplateMessage(
   body: SendTemplateMessageBody
 ): Promise<SendTemplateMessageResponse> {
   const res = await apiClient<ApiSuccessEnvelope<SendTemplateMessageResponse>>(
-    "/api/v1/messages/send-template",
+    "/messages/send-template",
     {
       method: "POST",
       body
