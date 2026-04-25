@@ -106,14 +106,20 @@ function buildSignUpBody(params: SignUpPayload): Record<string, string> {
   const body: Record<string, string> = {
     companyName: params.companyName.trim(),
     companyPhone: params.companyPhone.trim(),
+    companyEmail: params.companyEmail.trim(),
+
+    category: params.category,
+    address: params.address,
+    city: params.city,
+    state: params.state,
+    country: params.country,
+    zipcode: params.zipcode,
+
     name: params.name.trim(),
     email: params.email.trim(),
     password: params.password
   };
-  const companyEmail = params.companyEmail?.trim();
-  if (companyEmail) {
-    body.companyEmail = companyEmail;
-  }
+
   return body;
 }
 

@@ -12,8 +12,15 @@ export type SignInPayload = {
 export type SignUpPayload = {
   companyName: string;
   companyPhone: string;
-  /** If present and non-empty after trim, sent to the API; otherwise omitted. */
-  companyEmail?: string;
+  companyEmail: string;
+
+  category: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipcode: string;
+
   name: string;
   email: string;
   password: string;
