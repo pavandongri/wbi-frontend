@@ -1,8 +1,8 @@
 "use client";
 
+import AuthShowcase from "@/components/auth/AuthShowcase";
 import { getDefaultRouteForRole, normalizeRole } from "@/lib/rbac";
 import { signIn } from "@/services/auth/auth.api";
-import AuthShowcase from "@/components/auth/AuthShowcase";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import {
@@ -24,9 +24,9 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
@@ -52,7 +52,7 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      const { user } = await signIn({ email, password });
+      const { user } = await signIn({ email, password, rememberMe });
       router.push(getDefaultRouteForRole(normalizeRole(user)));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign-in failed";
@@ -135,14 +135,14 @@ export default function SignInPage() {
                     {errorMessage ? (
                       <Alert
                         severity="error"
-                        sx={{
-                          color: "primary.dark",
-                          bgcolor: "rgba(0, 168, 132, 0.12)",
-                          border: "1px solid rgba(0, 168, 132, 0.32)",
+                        sx={(theme) => ({
+                          color: theme.palette.auth.alertErrorText,
+                          bgcolor: theme.palette.auth.alertErrorBg,
+                          border: `1px solid ${theme.palette.auth.alertErrorBorder}`,
                           "& .MuiAlert-icon": {
-                            color: "primary.main"
+                            color: theme.palette.auth.alertErrorIcon
                           }
-                        }}
+                        })}
                       >
                         {errorMessage}
                       </Alert>

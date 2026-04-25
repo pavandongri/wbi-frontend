@@ -63,7 +63,11 @@ export async function signIn(params: SignInPayload): Promise<AuthApiResponse> {
 
   const user = userFromSignupLogin(res.data);
 
-  writeAuthClientSession(user, APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS);
+  const ttl = params.rememberMe
+    ? APP_CONSTANTS.AUTH_CLIENT_SESSION_REMEMBER_ME_TTL_MS
+    : APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS;
+
+  writeAuthClientSession(user, ttl);
 
   return { user };
 }
@@ -121,7 +125,11 @@ export async function signUp(params: SignUpPayload): Promise<AuthApiResponse> {
 
   const user = userFromSignupLogin(res.data);
 
-  writeAuthClientSession(user, APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS);
+  const ttl = params.rememberMe
+    ? APP_CONSTANTS.AUTH_CLIENT_SESSION_REMEMBER_ME_TTL_MS
+    : APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS;
+
+  writeAuthClientSession(user, ttl);
 
   return { user };
 }

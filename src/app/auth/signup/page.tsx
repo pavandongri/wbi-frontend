@@ -1,6 +1,12 @@
 "use client";
 
 import AuthShowcase from "@/components/auth/AuthShowcase";
+import {
+  EMAIL_REGEX,
+  INDIAN_PHONE_REGEX,
+  PASSWORD_HELPER,
+  PASSWORD_REGEX
+} from "@/helpers/validation.helpers";
 import { getDefaultRouteForRole, normalizeRole } from "@/lib/rbac";
 import { signUp } from "@/services/auth/auth.api";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -47,6 +53,7 @@ export default function SignUpPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  const phoneDigits = useMemo(() => companyPhone.replace(/\D/g, ""), [companyPhone]);
   const passwordsMatch = password.length > 0 && password === confirmPassword;
 
   const fieldErrors = useMemo(() => {
@@ -54,12 +61,24 @@ export default function SignUpPage() {
       Record<"companyName" | "companyPhone" | "name" | "email" | "password", string>
     > = {};
     if (!companyName.trim()) errors.companyName = "Required.";
-    if (!companyPhone.trim()) errors.companyPhone = "Required.";
+    if (!companyPhone.trim()) {
+      errors.companyPhone = "Required.";
+    } else if (!INDIAN_PHONE_REGEX.test(phoneDigits)) {
+      errors.companyPhone = "Enter a valid 10-digit phone number. +91 is added automatically.";
+    }
     if (!name.trim()) errors.name = "Required.";
-    if (!email.trim()) errors.email = "Required.";
-    if (!password) errors.password = "Required.";
+    if (!email.trim()) {
+      errors.email = "Required.";
+    } else if (!EMAIL_REGEX.test(email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+    if (!password) {
+      errors.password = "Required.";
+    } else if (!PASSWORD_REGEX.test(password)) {
+      errors.password = PASSWORD_HELPER;
+    }
     return errors;
-  }, [companyName, companyPhone, name, email, password]);
+  }, [companyName, companyPhone, email, name, password, phoneDigits]);
 
   const confirmPasswordError =
     confirmPassword.length > 0 && !passwordsMatch ? "Passwords do not match." : undefined;
@@ -86,7 +105,7 @@ export default function SignUpPage() {
     try {
       const { user } = await signUp({
         companyName,
-        companyPhone,
+        companyPhone: `+91${phoneDigits}`,
         name,
         email,
         password,
@@ -174,14 +193,14 @@ export default function SignUpPage() {
                     {errorMessage ? (
                       <Alert
                         severity="error"
-                        sx={{
-                          color: "primary.dark",
-                          bgcolor: "rgba(0, 168, 132, 0.12)",
-                          border: "1px solid rgba(0, 168, 132, 0.32)",
+                        sx={(theme) => ({
+                          color: theme.palette.auth.alertErrorText,
+                          bgcolor: theme.palette.auth.alertErrorBg,
+                          border: `1px solid ${theme.palette.auth.alertErrorBorder}`,
                           "& .MuiAlert-icon": {
-                            color: "primary.main"
+                            color: theme.palette.auth.alertErrorIcon
                           }
-                        }}
+                        })}
                       >
                         {errorMessage}
                       </Alert>
@@ -201,10 +220,16 @@ export default function SignUpPage() {
                         <TextField
                           label="Company phone"
                           value={companyPhone}
-                          onChange={(e) => setCompanyPhone(e.target.value)}
+                          onChange={(e) =>
+                            setCompanyPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                          }
+                          placeholder="9876543210"
                           error={hasSubmitted && Boolean(fieldErrors.companyPhone)}
                           helperText={hasSubmitted ? (fieldErrors.companyPhone ?? " ") : " "}
                           required
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">+91</InputAdornment>
+                          }}
                         />
 
                         <TextField

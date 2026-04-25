@@ -19,7 +19,10 @@ let theme = createTheme({
     },
 
     error: {
-      main: "#D93025"
+      light: "#FDE8E8",
+      main: "#E53935",
+      dark: "#B71C1C",
+      contrastText: "#FFFFFF"
     },
 
     warning: {
@@ -63,6 +66,12 @@ let theme = createTheme({
       outboundText: "#063D32",
       bubbleMeta: "rgba(6, 61, 50, 0.52)",
       chrome: "rgba(255, 255, 255, 0.78)"
+    },
+    auth: {
+      alertErrorText: "#007E66",
+      alertErrorBg: "rgba(0, 168, 132, 0.12)",
+      alertErrorBorder: "rgba(0, 168, 132, 0.32)",
+      alertErrorIcon: "#00A884"
     }
   },
 

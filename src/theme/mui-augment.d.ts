@@ -14,9 +14,16 @@ declare module "@mui/material/styles" {
       bubbleMeta: string;
       chrome: string;
     };
+    auth: {
+      alertErrorText: string;
+      alertErrorBg: string;
+      alertErrorBorder: string;
+      alertErrorIcon: string;
+    };
   }
   interface PaletteOptions {
     chat?: Partial<Palette["chat"]>;
+    auth?: Partial<Palette["auth"]>;
   }
 }
 
