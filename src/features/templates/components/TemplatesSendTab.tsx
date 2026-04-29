@@ -215,7 +215,7 @@ export default function TemplatesSendTab({ templates, templatesLoading, companyS
             <Typography variant="subtitle2" fontWeight={700} gutterBottom>
               Template parameters
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
               {paramKeys.map((key) => (
                 <TextField
                   key={key}
@@ -237,7 +237,11 @@ export default function TemplatesSendTab({ templates, templatesLoading, companyS
           <RadioGroup
             row
             value={targetMode}
-            onChange={(e) => setTargetMode(e.target.value as TargetMode)}
+            onChange={(e) => {
+              const next = e.target.value as TargetMode;
+              setTargetMode(next);
+              if (next === "group") setCustomerQ("");
+            }}
           >
             <FormControlLabel value="customer" control={<Radio />} label="Single customer" />
             <FormControlLabel value="group" control={<Radio />} label="Group" />
@@ -246,6 +250,7 @@ export default function TemplatesSendTab({ templates, templatesLoading, companyS
 
         {targetMode === "customer" ? (
           <Autocomplete
+            key="customer"
             sx={{ mt: 2 }}
             options={customersQuery.data?.items ?? []}
             loading={customersQuery.isFetching}
@@ -265,6 +270,7 @@ export default function TemplatesSendTab({ templates, templatesLoading, companyS
           />
         ) : (
           <Autocomplete
+            key="group"
             sx={{ mt: 2 }}
             options={groupsQuery.data?.items ?? []}
             loading={groupsQuery.isFetching}

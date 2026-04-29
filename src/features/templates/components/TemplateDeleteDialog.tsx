@@ -30,7 +30,7 @@ function TemplateDeleteDialogComponent({
     <AppModal
       open={open}
       onClose={onClose}
-      title="Delete template?"
+      title="Delete template ?"
       maxWidth="xs"
       closeOnBackdrop={!loading}
       closeOnEscape={!loading}
@@ -59,13 +59,10 @@ function TemplateDeleteDialogComponent({
       }
     >
       <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-        This removes the template from your workspace. Already sent messages are not changed.
+        Are you sure you want to delete this template{" "}
+        <b>{template ? ` - ${template?.name}` : ""}</b> ? This action cannot be undone.. Already
+        sent messages are not changed.
       </Typography>
-      {template ? (
-        <Typography sx={{ mt: 1.5 }} variant="subtitle2" fontWeight={800}>
-          {template.name}
-        </Typography>
-      ) : null}
       {error ? (
         <Alert severity="error" sx={{ mt: 2 }}>
           {error}
