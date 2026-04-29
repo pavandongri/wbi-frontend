@@ -1,9 +1,9 @@
 "use client";
 
 import { useToast } from "@/components/ui";
+import StaffAccessGate from "@/features/staff/components/StaffAccessGate";
 import StaffDeleteDialog from "@/features/staff/components/StaffDeleteDialog";
 import StaffFormDialog from "@/features/staff/components/StaffFormDialog";
-import StaffAccessGate from "@/features/staff/components/StaffAccessGate";
 import StaffTableSection from "@/features/staff/components/StaffTableSection";
 import StaffToolbar from "@/features/staff/components/StaffToolbar";
 import { useStaffListParams } from "@/features/staff/hooks/useStaffListParams";
@@ -54,7 +54,7 @@ function StaffCrudShell() {
   const [deleting, setDeleting] = useState<UserRow | null>(null);
 
   const createMut = useMutation({
-    mutationFn: (payload: { name: string; email: string; password: string }) =>
+    mutationFn: (payload: { name: string; email: string; password: string; phone: string }) =>
       createUser({ ...payload, role: "staff" }),
     onSuccess: async () => {
       toast.showToast({ message: "Staff member created successfully.", severity: "success" });
@@ -69,8 +69,12 @@ function StaffCrudShell() {
   });
 
   const updateMut = useMutation({
-    mutationFn: (args: { id: string; body: { name: string; email: string } }) => {
-      const patch: UpdateUserBody = { name: args.body.name, email: args.body.email };
+    mutationFn: (args: { id: string; body: { name: string; email: string; phone: string } }) => {
+      const patch: UpdateUserBody = {
+        name: args.body.name,
+        email: args.body.email,
+        phone: args.body.phone
+      };
       return updateUser(args.id, patch);
     },
     onSuccess: async () => {
@@ -148,7 +152,7 @@ function StaffCrudShell() {
   );
 
   const handleSubmitCreate = useCallback(
-    (payload: { name: string; email: string; password: string }) => {
+    (payload: { name: string; email: string; password: string; phone: string }) => {
       setFormRemoteError(null);
       createMut.mutate(payload);
     },
@@ -156,7 +160,7 @@ function StaffCrudShell() {
   );
 
   const handleSubmitEdit = useCallback(
-    (payload: { name: string; email: string }) => {
+    (payload: { name: string; email: string; phone: string }) => {
       if (!editing) return;
       setFormRemoteError(null);
       updateMut.mutate({ id: editing.id, body: payload });

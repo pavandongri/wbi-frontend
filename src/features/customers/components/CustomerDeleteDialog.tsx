@@ -28,7 +28,7 @@ function CustomerDeleteDialogComponent({
     <AppModal
       open={open}
       onClose={onClose}
-      title="Delete customer?"
+      title="Delete customer ?"
       maxWidth="xs"
       closeOnBackdrop={!isPending}
       closeOnEscape={!isPending}
@@ -57,11 +57,7 @@ function CustomerDeleteDialogComponent({
       }
     >
       <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-        This soft-deletes{" "}
-        <Typography component="span" fontWeight={800} color="text.primary">
-          {customer?.name}
-        </Typography>
-        . The record will be marked inactive.
+        Are you sure you want to delete this customer? This action cannot be undone
       </Typography>
     </AppModal>
   );

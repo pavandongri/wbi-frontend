@@ -41,3 +41,8 @@ export async function logoutUser(): Promise<void> {
 export function normalizePhone(phone: string): string {
   return phone.replace(/\D/g, "");
 }
+
+export function normalizeString(value: string): string | undefined {
+  const next = value.trim();
+  return next || undefined;
+}

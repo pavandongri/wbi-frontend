@@ -1,6 +1,5 @@
 "use client";
 
-import { StatusChip } from "@/components/ui";
 import {
   ADMINS_CONTROL_RADIUS_PX,
   ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX
@@ -49,11 +48,9 @@ export type StaffTableSectionProps = {
 type HeadCell = { id: UsersSortBy; label: string; width?: number };
 
 const HEAD: readonly HeadCell[] = [
-  { id: "name", label: "Name" },
-  { id: "email", label: "Email" },
-  { id: "phone", label: "Phone" },
-  { id: "role", label: "Role" },
-  { id: "status", label: "Status" }
+  { id: "name", label: "Name", width: 220 },
+  { id: "email", label: "Email", width: 260 },
+  { id: "phone", label: "Phone", width: 180 }
 ] as const;
 
 function TablePaginationActions(props: {
@@ -126,7 +123,6 @@ function StaffTableSectionComponent({
 }: StaffTableSectionProps) {
   const theme = useTheme();
   const muiPage = Math.max(0, page - 1);
-
   const handleSort = useCallback(
     (field: UsersSortBy) => {
       onSort(field);
@@ -168,7 +164,7 @@ function StaffTableSectionComponent({
           overflow: "auto"
         }}
       >
-        <Table size="medium" stickyHeader sx={{ minWidth: 720 }}>
+        <Table size="medium" stickyHeader sx={{ minWidth: 660, tableLayout: "fixed" }}>
           <TableHead>
             <TableRow
               sx={{
@@ -254,18 +250,6 @@ function StaffTableSectionComponent({
                       <Typography variant="body2" fontWeight={600} color="text.secondary">
                         {u.phone ?? "—"}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        sx={{ textTransform: "capitalize" }}
-                      >
-                        {u.role.replaceAll("_", " ")}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip status={String(u.status)} />
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                       <IconButton

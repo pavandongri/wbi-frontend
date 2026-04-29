@@ -1,12 +1,10 @@
 "use client";
 
-import { StatusChip } from "@/components/ui";
 import {
   ADMINS_CONTROL_RADIUS_PX,
   ADMINS_TABLE_SCROLL_MAX_HEIGHT_PX
 } from "@/features/admins/adminsUiTokens";
-import type { UsersSortBy } from "@/types/users.types";
-import type { UserRow } from "@/types/users.types";
+import type { UserRow, UsersSortBy } from "@/types/users.types";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
@@ -50,11 +48,9 @@ export type AdminsTableSectionProps = {
 type HeadCell = { id: UsersSortBy; label: string; width?: number };
 
 const HEAD: readonly HeadCell[] = [
-  { id: "name", label: "Name" },
-  { id: "email", label: "Email" },
-  { id: "phone", label: "Phone" },
-  { id: "role", label: "Role" },
-  { id: "status", label: "Status" }
+  { id: "name", label: "Name", width: 220 },
+  { id: "email", label: "Email", width: 260 },
+  { id: "phone", label: "Phone", width: 180 }
 ] as const;
 
 function TablePaginationActions(props: {
@@ -169,7 +165,7 @@ function AdminsTableSectionComponent({
           overflow: "auto"
         }}
       >
-        <Table size="medium" stickyHeader sx={{ minWidth: 720 }}>
+        <Table size="medium" stickyHeader sx={{ minWidth: 660, tableLayout: "fixed" }}>
           <TableHead>
             <TableRow
               sx={{
@@ -255,18 +251,6 @@ function AdminsTableSectionComponent({
                       <Typography variant="body2" fontWeight={600} color="text.secondary">
                         {u.phone ?? "—"}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        sx={{ textTransform: "capitalize" }}
-                      >
-                        {u.role.replaceAll("_", " ")}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip status={String(u.status)} />
                     </TableCell>
                     <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                       <IconButton
