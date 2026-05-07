@@ -22,42 +22,54 @@ import {
 let getMeInFlight: Promise<AuthApiResponse> | null = null;
 
 function userFromMe(data: AuthMeData): User {
+  const companyPhone = data.companyPhone ?? data.phoneNumber;
   return {
     id: data.userId,
     companyId: data.companyId,
+    companyPhone,
+    phoneNumber: companyPhone,
     name: data.name,
     email: data.email,
-    role: isAuthRole(data.role) ? data.role : undefined
+    role: isAuthRole(data.role) ? data.role : undefined,
+    messageCredits: data.messageCredits
   };
 }
 
 function userFromSignupLogin(data: AuthSignupLoginData): User {
+  const companyPhone = data.companyPhone ?? data.phoneNumber;
   return {
     id: data.userId,
     companyId: data.companyId,
+    companyPhone,
+    phoneNumber: companyPhone,
     name: data.userDetails.name,
     email: data.userDetails.email,
     phone: data.userDetails.phone,
-    role: isAuthRole(data.role) ? data.role : undefined
+    role: isAuthRole(data.role) ? data.role : undefined,
+    messageCredits: data.messageCredits
   };
 }
 
 async function fetchMeFromNetwork(): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthMeData>>("/api/v1/auth/me", {
+  const res = await apiClient<AuthBackendEnvelope<AuthMeData>>("/auth/me", {
     method: "GET"
   });
   return { user: userFromMe(res.data) };
 }
 
 export async function signIn(params: SignInPayload): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/api/v1/auth/login", {
+  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/auth/login", {
     method: "POST",
     body: { email: params.email, password: params.password }
   });
 
   const user = userFromSignupLogin(res.data);
 
-  writeAuthClientSession(user, APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS);
+  const ttl = params.rememberMe
+    ? APP_CONSTANTS.AUTH_CLIENT_SESSION_REMEMBER_ME_TTL_MS
+    : APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS;
+
+  writeAuthClientSession(user, ttl);
 
   return { user };
 }
@@ -96,33 +108,43 @@ function buildSignUpBody(params: SignUpPayload): Record<string, string> {
   const body: Record<string, string> = {
     companyName: params.companyName.trim(),
     companyPhone: params.companyPhone.trim(),
+    companyEmail: params.companyEmail.trim(),
+
+    category: params.category,
+    address: params.address,
+    city: params.city,
+    state: params.state,
+    country: params.country,
+    zipcode: params.zipcode,
+
     name: params.name.trim(),
     email: params.email.trim(),
     password: params.password
   };
-  const companyEmail = params.companyEmail?.trim();
-  if (companyEmail) {
-    body.companyEmail = companyEmail;
-  }
+
   return body;
 }
 
 export async function signUp(params: SignUpPayload): Promise<AuthApiResponse> {
-  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/api/v1/auth/signup", {
+  const res = await apiClient<AuthBackendEnvelope<AuthSignupLoginData>>("/auth/signup", {
     method: "POST",
     body: buildSignUpBody(params)
   });
 
   const user = userFromSignupLogin(res.data);
 
-  writeAuthClientSession(user, APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS);
+  const ttl = params.rememberMe
+    ? APP_CONSTANTS.AUTH_CLIENT_SESSION_REMEMBER_ME_TTL_MS
+    : APP_CONSTANTS.AUTH_CLIENT_SESSION_SIGNIN_TTL_MS;
+
+  writeAuthClientSession(user, ttl);
 
   return { user };
 }
 
 export async function signOut(): Promise<{ ok: true }> {
   try {
-    await apiClient<AuthBackendEnvelope<null>>("/api/v1/auth/logout", { method: "POST" });
+    await apiClient<AuthBackendEnvelope<null>>("/auth/logout", { method: "POST" });
   } finally {
     clearAuthClientSession();
   }

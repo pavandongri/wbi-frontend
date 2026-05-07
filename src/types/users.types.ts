@@ -53,13 +53,13 @@ export type CreateUserBody = {
   email: string;
   password: string;
   role: AuthRole;
-  phone?: string;
+  phone: string;
 };
 
 export type UpdateUserBody = Partial<{
   name: string;
   email: string;
-  phone: string | null;
+  phone: string;
   password: string;
   role: AuthRole;
   companyId: string;

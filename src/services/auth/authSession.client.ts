@@ -32,6 +32,9 @@ function safeParse(raw: string | null): AuthClientSessionV1 | null {
       user: {
         id: data.user.id,
         companyId: typeof data.user.companyId === "string" ? data.user.companyId : undefined,
+        companyPhone:
+          typeof data.user.companyPhone === "string" ? data.user.companyPhone : undefined,
+        phoneNumber: typeof data.user.phoneNumber === "string" ? data.user.phoneNumber : undefined,
         name: data.user.name,
         email: data.user.email,
         phone:
@@ -39,7 +42,9 @@ function safeParse(raw: string | null): AuthClientSessionV1 | null {
             ? data.user.phone
             : undefined,
         picture: typeof data.user.picture === "string" ? data.user.picture : undefined,
-        role: isAuthRole(data.user.role) ? data.user.role : undefined
+        role: isAuthRole(data.user.role) ? data.user.role : undefined,
+        messageCredits:
+          typeof data.user.messageCredits === "number" ? data.user.messageCredits : undefined
       }
     };
   } catch {

@@ -1,10 +1,17 @@
-const EMAIL_RE =
+export const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+export const INDIAN_PHONE_REGEX = /^\d{10}$/;
+
+export const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+
+export const PASSWORD_HELPER =
+  "Min 8 chars with uppercase, lowercase, number, and special character.";
 
 export function isValidEmail(email: string): boolean {
   const v = email.trim();
   if (v.length < 5 || v.length > 254) return false;
-  return EMAIL_RE.test(v);
+  return EMAIL_REGEX.test(v);
 }
 
 /**

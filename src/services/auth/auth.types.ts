@@ -12,8 +12,15 @@ export type SignInPayload = {
 export type SignUpPayload = {
   companyName: string;
   companyPhone: string;
-  /** If present and non-empty after trim, sent to the API; otherwise omitted. */
-  companyEmail?: string;
+  companyEmail: string;
+
+  category: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  zipcode: string;
+
   name: string;
   email: string;
   password: string;
@@ -36,7 +43,10 @@ export type AuthBackendEnvelope<TData> = {
 export type AuthSignupLoginData = {
   userId: string;
   companyId: string;
+  companyPhone?: string;
+  phoneNumber?: string;
   role: string;
+  messageCredits: number;
   userDetails: {
     name: string;
     email: string;
@@ -48,7 +58,10 @@ export type AuthSignupLoginData = {
 export type AuthMeData = {
   userId: string;
   companyId: string;
+  companyPhone?: string;
+  phoneNumber?: string;
   role: string;
   name: string;
   email: string;
+  messageCredits: number;
 };

@@ -8,7 +8,8 @@ import {
 import {
   getConfirmPasswordError,
   getEmailFieldError,
-  getPasswordRuleError
+  getPasswordRuleError,
+  INDIAN_PHONE_REGEX
 } from "@/helpers/validation.helpers";
 import type { UserRow } from "@/types/users.types";
 import VisibilityOffRoundedIcon from "@mui/icons-material/VisibilityOffRounded";
@@ -20,8 +21,7 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
-  TextField,
-  Typography
+  TextField
 } from "@mui/material";
 import { memo, useCallback, useMemo, useState } from "react";
 
@@ -34,11 +34,18 @@ export type AdminFormDialogProps = {
   isSubmitting: boolean;
   errorMessage: string | null;
   onClose: () => void;
-  onSubmitCreate: (payload: { name: string; email: string; password: string }) => void;
-  onSubmitEdit: (payload: { name: string; email: string }) => void;
+  onSubmitCreate: (payload: {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+  }) => void;
+  onSubmitEdit: (payload: { name: string; email: string; phone: string }) => void;
 };
 
-type FieldErrors = Partial<Record<"name" | "email" | "password" | "confirmPassword", string>>;
+type FieldErrors = Partial<
+  Record<"name" | "email" | "phone" | "password" | "confirmPassword", string>
+>;
 
 function AdminFormDialogComponent({
   open,
@@ -52,18 +59,28 @@ function AdminFormDialogComponent({
 }: AdminFormDialogProps) {
   const [name, setName] = useState(() => (mode === "edit" && user ? user.name : ""));
   const [email, setEmail] = useState(() => (mode === "edit" && user ? user.email : ""));
+  const [phone, setPhone] = useState(() => {
+    if (mode === "edit" && user?.phone) {
+      return user.phone.replace(/^\+91/, "").replace(/\D/g, "").slice(0, 10);
+    }
+    return "";
+  });
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
-  const [touched, setTouched] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const fieldErrors: FieldErrors = useMemo(() => {
-    if (!touched) return {};
     const errors: FieldErrors = {};
     if (!name.trim()) errors.name = "Name is required.";
     const emailErr = getEmailFieldError(email);
     if (emailErr) errors.email = emailErr;
+    if (!phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!INDIAN_PHONE_REGEX.test(phone)) {
+      errors.phone = "Enter a valid 10-digit phone number.";
+    }
 
     if (mode === "create") {
       const pwErr = getPasswordRuleError(password);
@@ -73,32 +90,23 @@ function AdminFormDialogComponent({
     }
 
     return errors;
-  }, [touched, name, email, password, confirmPassword, mode]);
-
-  const canSubmit = useMemo(() => {
-    if (!name.trim() || getEmailFieldError(email)) return false;
-    if (mode === "create") {
-      return !getPasswordRuleError(password) && !getConfirmPasswordError(password, confirmPassword);
-    }
-    return true;
-  }, [mode, name, email, password, confirmPassword]);
+  }, [name, email, phone, password, confirmPassword, mode]);
 
   const handleSubmit = useCallback(() => {
-    setTouched(true);
-    if (!name.trim()) return;
-    if (getEmailFieldError(email)) return;
+    setHasSubmitted(true);
+    if (!name.trim() || getEmailFieldError(email) || !INDIAN_PHONE_REGEX.test(phone)) return;
 
     if (mode === "create") {
       if (getPasswordRuleError(password) || getConfirmPasswordError(password, confirmPassword))
         return;
-      onSubmitCreate({ name: name.trim(), email: email.trim(), password });
+      onSubmitCreate({ name: name.trim(), email: email.trim(), phone: `+91${phone}`, password });
       return;
     }
 
-    onSubmitEdit({ name: name.trim(), email: email.trim() });
-  }, [mode, name, email, password, confirmPassword, onSubmitCreate, onSubmitEdit]);
+    onSubmitEdit({ name: name.trim(), email: email.trim(), phone: `+91${phone}` });
+  }, [mode, name, email, phone, password, confirmPassword, onSubmitCreate, onSubmitEdit]);
 
-  const title = mode === "create" ? "Invite a new admin" : "Edit admin";
+  const title = mode === "create" ? "Create Admin" : "Edit Admin";
 
   return (
     <AppModal
@@ -121,7 +129,7 @@ function AdminFormDialogComponent({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || !canSubmit}
+            disabled={isSubmitting}
             variant="contained"
             startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ ...ADMINS_MODAL_ACTION_BUTTON_SX }}
@@ -142,32 +150,12 @@ function AdminFormDialogComponent({
           </Alert>
         ) : null}
 
-        {mode === "create" ? (
-          <Box>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              fontWeight={800}
-              letterSpacing="0.08em"
-            >
-              Identity
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, lineHeight: 1.65 }}>
-              Role is fixed to{" "}
-              <Typography component="span" fontWeight={800} color="text.primary">
-                admin
-              </Typography>{" "}
-              for every invite from this workspace.
-            </Typography>
-          </Box>
-        ) : null}
-
         <TextField
           label="Full name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          error={Boolean(fieldErrors.name)}
-          helperText={fieldErrors.name}
+          error={hasSubmitted && Boolean(fieldErrors.name)}
+          helperText={hasSubmitted ? fieldErrors.name : undefined}
           disabled={isSubmitting}
           autoComplete="name"
         />
@@ -176,10 +164,24 @@ function AdminFormDialogComponent({
           label="Work email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={Boolean(fieldErrors.email)}
-          helperText={fieldErrors.email}
+          error={hasSubmitted && Boolean(fieldErrors.email)}
+          helperText={hasSubmitted ? fieldErrors.email : undefined}
           disabled={isSubmitting}
           autoComplete="email"
+        />
+
+        <TextField
+          label="Phone number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+          error={hasSubmitted && Boolean(fieldErrors.phone)}
+          helperText={hasSubmitted ? fieldErrors.phone : undefined}
+          disabled={isSubmitting}
+          autoComplete="tel"
+          placeholder="9876543210"
+          slotProps={{
+            input: { startAdornment: <InputAdornment position="start">+91</InputAdornment> }
+          }}
         />
 
         {mode === "create" ? (
@@ -189,8 +191,12 @@ function AdminFormDialogComponent({
               type={showPw ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={Boolean(fieldErrors.password)}
-              helperText={fieldErrors.password ?? "8+ chars with upper, lower, number, and symbol."}
+              error={hasSubmitted && Boolean(fieldErrors.password)}
+              helperText={
+                hasSubmitted
+                  ? (fieldErrors.password ?? "8+ chars with upper, lower, number, and symbol.")
+                  : "8+ chars with upper, lower, number, and symbol."
+              }
               disabled={isSubmitting}
               autoComplete="new-password"
               InputProps={{
@@ -214,8 +220,8 @@ function AdminFormDialogComponent({
               type={showPw2 ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              error={Boolean(fieldErrors.confirmPassword)}
-              helperText={fieldErrors.confirmPassword}
+              error={hasSubmitted && Boolean(fieldErrors.confirmPassword)}
+              helperText={hasSubmitted ? fieldErrors.confirmPassword : undefined}
               disabled={isSubmitting}
               autoComplete="new-password"
               InputProps={{

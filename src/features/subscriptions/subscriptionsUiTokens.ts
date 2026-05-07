@@ -1,0 +1,3 @@
+export const SUBS_CONTROL_RADIUS_PX = 12;
+export const SUBS_TABLE_SCROLL_MAX_HEIGHT_PX = 480;
+export const SUBS_CONTROL_HEIGHT_PX = 40;

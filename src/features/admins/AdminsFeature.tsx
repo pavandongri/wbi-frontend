@@ -54,7 +54,7 @@ function AdminsCrudShell() {
   const [deleting, setDeleting] = useState<UserRow | null>(null);
 
   const createMut = useMutation({
-    mutationFn: (payload: { name: string; email: string; password: string }) =>
+    mutationFn: (payload: { name: string; email: string; password: string; phone: string }) =>
       createUser({ ...payload, role: "admin" }),
     onSuccess: async () => {
       toast.showToast({ message: "Admin created successfully.", severity: "success" });
@@ -69,8 +69,12 @@ function AdminsCrudShell() {
   });
 
   const updateMut = useMutation({
-    mutationFn: (args: { id: string; body: { name: string; email: string } }) => {
-      const patch: UpdateUserBody = { name: args.body.name, email: args.body.email };
+    mutationFn: (args: { id: string; body: { name: string; email: string; phone: string } }) => {
+      const patch: UpdateUserBody = {
+        name: args.body.name,
+        email: args.body.email,
+        phone: args.body.phone
+      };
       return updateUser(args.id, patch);
     },
     onSuccess: async () => {
@@ -148,7 +152,7 @@ function AdminsCrudShell() {
   );
 
   const handleSubmitCreate = useCallback(
-    (payload: { name: string; email: string; password: string }) => {
+    (payload: { name: string; email: string; password: string; phone: string }) => {
       setFormRemoteError(null);
       createMut.mutate(payload);
     },
@@ -156,7 +160,7 @@ function AdminsCrudShell() {
   );
 
   const handleSubmitEdit = useCallback(
-    (payload: { name: string; email: string }) => {
+    (payload: { name: string; email: string; phone: string }) => {
       if (!editing) return;
       setFormRemoteError(null);
       updateMut.mutate({ id: editing.id, body: payload });

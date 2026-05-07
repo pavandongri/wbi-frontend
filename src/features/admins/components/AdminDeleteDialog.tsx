@@ -28,7 +28,7 @@ function AdminDeleteDialogComponent({
     <AppModal
       open={open}
       onClose={onClose}
-      title="Remove admin access?"
+      title="Delete Admin"
       maxWidth="xs"
       closeOnBackdrop={!isPending}
       closeOnEscape={!isPending}
@@ -51,18 +51,13 @@ function AdminDeleteDialogComponent({
             startIcon={isPending ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={{ ...ADMINS_MODAL_ACTION_BUTTON_SX }}
           >
-            Deactivate
+            Delete
           </Button>
         </>
       }
     >
       <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-        This soft-deletes{" "}
-        <Typography component="span" fontWeight={800} color="text.primary">
-          {user?.name}
-        </Typography>{" "}
-        ({user?.email}). They will lose admin access immediately, and the audit trail keeps the
-        record for compliance.
+        Are you sure. You want to delete ? This action cannot be reversed.
       </Typography>
     </AppModal>
   );

@@ -1,10 +1,42 @@
 "use client";
 
 import AuthShowcase from "@/components/auth/AuthShowcase";
+import {
+  EMAIL_REGEX,
+  INDIAN_PHONE_REGEX,
+  PASSWORD_HELPER,
+  PASSWORD_REGEX
+} from "@/helpers/validation.helpers";
 import { getDefaultRouteForRole, normalizeRole } from "@/lib/rbac";
 import { signUp } from "@/services/auth/auth.api";
+
+import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+
+const CATEGORY_OPTIONS = [
+  "Food & Restaurant",
+  "Education",
+  "Clothing & Fashion",
+  "Beauty & Salon",
+  "Healthcare",
+  "Fitness & Gym",
+  "Retail Store",
+  "E-commerce",
+  "IT & Software",
+  "Real Estate",
+  "Finance & Accounting",
+  "Travel & Tourism",
+  "Automobile",
+  "Construction",
+  "Manufacturing",
+  "Logistics",
+  "Media & Entertainment",
+  "Hospitality",
+  "Consulting",
+  "Other"
+];
+
 import {
   Alert,
   Avatar,
@@ -15,31 +47,50 @@ import {
   Checkbox,
   CircularProgress,
   Divider,
+  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   TextField,
   Typography
 } from "@mui/material";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
-
 export default function SignUpPage() {
   const router = useRouter();
 
+  // 🔹 Company fields
   const [companyName, setCompanyName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
+  const [companyEmail, setCompanyEmail] = useState("");
+  const [category, setCategory] = useState("");
+  const [otherCategory, setOtherCategory] = useState("");
+
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [zipcode, setZipcode] = useState("");
+
+  // 🔹 Admin fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+
+  // 🔹 Auth
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // 🔹 UI state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -47,29 +98,70 @@ export default function SignUpPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  const phoneDigits = useMemo(() => companyPhone.replace(/\D/g, ""), [companyPhone]);
   const passwordsMatch = password.length > 0 && password === confirmPassword;
 
+  // Validation
   const fieldErrors = useMemo(() => {
-    const errors: Partial<
-      Record<"companyName" | "companyPhone" | "name" | "email" | "password", string>
-    > = {};
+    const errors: Partial<Record<string, string>> = {};
+
     if (!companyName.trim()) errors.companyName = "Required.";
-    if (!companyPhone.trim()) errors.companyPhone = "Required.";
+
+    if (!companyPhone.trim()) {
+      errors.companyPhone = "Required.";
+    } else if (!INDIAN_PHONE_REGEX.test(phoneDigits)) {
+      errors.companyPhone = "Enter valid 10-digit phone.";
+    }
+
+    if (!companyEmail.trim()) {
+      errors.companyEmail = "Required.";
+    } else if (!EMAIL_REGEX.test(companyEmail.trim())) {
+      errors.companyEmail = "Invalid email.";
+    }
+
+    if (!category.trim()) errors.category = "Required.";
+    if (!address.trim()) errors.address = "Required.";
+    if (!city.trim()) errors.city = "Required.";
+    if (!state.trim()) errors.state = "Required.";
+    if (!country.trim()) errors.country = "Required.";
+    if (!zipcode.trim()) errors.zipcode = "Required.";
+
     if (!name.trim()) errors.name = "Required.";
-    if (!email.trim()) errors.email = "Required.";
-    if (!password) errors.password = "Required.";
+
+    if (!email.trim()) {
+      errors.email = "Required.";
+    } else if (!EMAIL_REGEX.test(email.trim())) {
+      errors.email = "Invalid email.";
+    }
+
+    if (!password) {
+      errors.password = "Required.";
+    } else if (!PASSWORD_REGEX.test(password)) {
+      errors.password = PASSWORD_HELPER;
+    }
+
     return errors;
-  }, [companyName, companyPhone, name, email, password]);
+  }, [
+    companyName,
+    companyPhone,
+    companyEmail,
+    category,
+    address,
+    city,
+    state,
+    country,
+    zipcode,
+    name,
+    email,
+    password,
+    phoneDigits
+  ]);
 
   const confirmPasswordError =
     confirmPassword.length > 0 && !passwordsMatch ? "Passwords do not match." : undefined;
 
   const isFormValid =
     Object.keys(fieldErrors).length === 0 && Boolean(passwordsMatch) && confirmPassword.length > 0;
-
-  const canSubmit = useMemo(() => {
-    return !loading;
-  }, [loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +178,14 @@ export default function SignUpPage() {
     try {
       const { user } = await signUp({
         companyName,
-        companyPhone,
+        companyPhone: `+91${phoneDigits}`,
+        companyEmail,
+        category: category === "Other" ? otherCategory : category,
+        address,
+        city,
+        state,
+        country,
+        zipcode,
         name,
         email,
         password,
@@ -174,14 +273,14 @@ export default function SignUpPage() {
                     {errorMessage ? (
                       <Alert
                         severity="error"
-                        sx={{
-                          color: "primary.dark",
-                          bgcolor: "rgba(0, 168, 132, 0.12)",
-                          border: "1px solid rgba(0, 168, 132, 0.32)",
+                        sx={(theme) => ({
+                          color: theme.palette.auth.alertErrorText,
+                          bgcolor: theme.palette.auth.alertErrorBg,
+                          border: `1px solid ${theme.palette.auth.alertErrorBorder}`,
                           "& .MuiAlert-icon": {
-                            color: "primary.main"
+                            color: theme.palette.auth.alertErrorIcon
                           }
-                        }}
+                        })}
                       >
                         {errorMessage}
                       </Alert>
@@ -199,16 +298,107 @@ export default function SignUpPage() {
                         />
 
                         <TextField
-                          label="Company phone"
+                          label="Company Phone"
                           value={companyPhone}
-                          onChange={(e) => setCompanyPhone(e.target.value)}
+                          onChange={(e) =>
+                            setCompanyPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                          }
+                          placeholder="9876543210"
                           error={hasSubmitted && Boolean(fieldErrors.companyPhone)}
                           helperText={hasSubmitted ? (fieldErrors.companyPhone ?? " ") : " "}
                           required
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">+91</InputAdornment>
+                          }}
+                        />
+                        <TextField
+                          label="Company Email"
+                          value={companyEmail}
+                          onChange={(e) => setCompanyEmail(e.target.value)}
+                          placeholder="abc@gmail.com"
+                          error={hasSubmitted && Boolean(fieldErrors.companyEmail)}
+                          helperText={hasSubmitted ? (fieldErrors.companyEmail ?? " ") : " "}
+                          required
                         />
 
+                        <FormControl
+                          fullWidth
+                          required
+                          error={hasSubmitted && Boolean(fieldErrors.category)}
+                        >
+                          <InputLabel>Category</InputLabel>
+
+                          <Select
+                            value={category}
+                            label="Category"
+                            onChange={(e) => setCategory(e.target.value)}
+                          >
+                            {CATEGORY_OPTIONS.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </Select>
+
+                          <Typography variant="caption" color="error">
+                            {hasSubmitted ? fieldErrors.category : ""}
+                          </Typography>
+                        </FormControl>
+
+                        {category === "Other" && (
+                          <TextField
+                            label="Specify Category"
+                            value={otherCategory}
+                            onChange={(e) => setOtherCategory(e.target.value)}
+                            required
+                          />
+                        )}
+
+                        {/* Address */}
                         <TextField
-                          label="Admin full name"
+                          label="Address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          error={hasSubmitted && Boolean(fieldErrors.address)}
+                          helperText={hasSubmitted ? (fieldErrors.address ?? " ") : " "}
+                          required
+                        />
+                        <TextField
+                          label="City"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          error={hasSubmitted && Boolean(fieldErrors.city)}
+                          helperText={hasSubmitted ? (fieldErrors.city ?? " ") : " "}
+                          required
+                        />
+                        <TextField
+                          label="State"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          error={hasSubmitted && Boolean(fieldErrors.state)}
+                          helperText={hasSubmitted ? (fieldErrors.state ?? " ") : " "}
+                          required
+                        />
+                        <TextField
+                          label="Country"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          error={hasSubmitted && Boolean(fieldErrors.country)}
+                          helperText={hasSubmitted ? (fieldErrors.country ?? " ") : " "}
+                          required
+                        />
+                        <TextField
+                          label="Zipcode"
+                          value={zipcode}
+                          onChange={(e) => setZipcode(e.target.value)}
+                          error={hasSubmitted && Boolean(fieldErrors.zipcode)}
+                          helperText={hasSubmitted ? (fieldErrors.zipcode ?? " ") : " "}
+                          required
+                        />
+
+                        {/* Admin */}
+                        <TextField
+                          label="Admin Name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           error={hasSubmitted && Boolean(fieldErrors.name)}
@@ -252,7 +442,7 @@ export default function SignUpPage() {
                         />
 
                         <TextField
-                          label="Confirm password"
+                          label="Confirm Password"
                           type={showConfirm ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -288,15 +478,14 @@ export default function SignUpPage() {
                         <Button
                           type="submit"
                           variant="contained"
-                          disabled={!canSubmit}
-                          fullWidth
-                          sx={{ py: 1.4 }}
+                          disabled={loading}
+                          sx={{ borderRadius: 1.5 }}
                         >
                           {loading ? (
                             <CircularProgress size={18} color="inherit" />
                           ) : (
                             "Create account"
-                          )}
+                          )}{" "}
                         </Button>
 
                         <Typography variant="body2" color="text.secondary" align="center">

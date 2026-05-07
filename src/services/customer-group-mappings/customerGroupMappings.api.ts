@@ -26,7 +26,7 @@ export async function listCustomerGroupMappings(
 ): Promise<PaginatedCustomerGroupMappings> {
   const qs = buildListQuery(params);
   const res = await apiClient<ApiSuccessEnvelope<PaginatedCustomerGroupMappings>>(
-    `/api/v1/customer-group-mappings?${qs}`,
+    `/customer-group-mappings?${qs}`,
     {
       method: "GET"
     }
@@ -39,7 +39,7 @@ export async function createCustomerGroupMapping(
 ): Promise<CustomerGroupMappingRow | CustomerGroupMappingRow[]> {
   const res = await apiClient<
     ApiSuccessEnvelope<CustomerGroupMappingRow | CustomerGroupMappingRow[]>
-  >("/api/v1/customer-group-mappings", {
+  >("/customer-group-mappings", {
     method: "POST",
     body
   });
@@ -51,7 +51,7 @@ export async function updateCustomerGroupMapping(
   body: UpdateCustomerGroupMappingBody
 ): Promise<CustomerGroupMappingRow> {
   const res = await apiClient<ApiSuccessEnvelope<CustomerGroupMappingRow>>(
-    `/api/v1/customer-group-mappings/${id}`,
+    `/customer-group-mappings/${id}`,
     {
       method: "PATCH",
       body
@@ -64,7 +64,7 @@ export async function deleteCustomerGroupMapping(
   id: string
 ): Promise<DeleteCustomerGroupMappingResponse> {
   const res = await apiClient<ApiSuccessEnvelope<DeleteCustomerGroupMappingResponse>>(
-    `/api/v1/customer-group-mappings/${id}`,
+    `/customer-group-mappings/${id}`,
     {
       method: "DELETE"
     }

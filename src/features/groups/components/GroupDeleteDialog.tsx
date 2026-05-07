@@ -6,7 +6,7 @@ import {
   ADMINS_MODAL_ACTION_BUTTON_SX
 } from "@/features/admins/adminsUiTokens";
 import type { GroupRow } from "@/types/groups.types";
-import { Button, CircularProgress, Typography } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { memo } from "react";
 
 type GroupDeleteDialogProps = {
@@ -56,13 +56,7 @@ function GroupDeleteDialogComponent({
         </>
       }
     >
-      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-        This soft-deletes{" "}
-        <Typography component="span" fontWeight={800} color="text.primary">
-          {group?.name}
-        </Typography>
-        . The record remains available for audit history.
-      </Typography>
+      Are you sure you want to delete this group? This action cannot be undone.{" "}
     </AppModal>
   );
 }

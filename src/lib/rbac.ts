@@ -2,25 +2,30 @@ import type { User } from "@/types/common.types";
 import { type AuthRole, isAuthRole } from "@/types/roles";
 
 const SUPER = ["/dashboard", "/subscription-plans", "/companies", "/super-admins"] as const;
-const ADMIN = ["/reports", "/admins", "/staff", "/subscriptions", "/payments"] as const;
+const ADMIN = ["/reports", "/admins", "/staff", "/payments"] as const;
 const STAFF = [
   "/groups",
   "/customers",
   "/templates",
   "/chats",
   "/campaigns",
-  "/workflows"
+  "/workflows",
+  "/subscriptions"
 ] as const;
+
+/** Routes accessible to admin/staff but NOT shown in their sidebar nav */
+const UNLISTED = ["/subscription-plans"] as const;
 
 const ALL = [...SUPER, ...ADMIN, ...STAFF] as const;
 
 const ROLE_PREFIXES: Record<AuthRole, readonly string[]> = {
   super_admin: ALL,
-  admin: [...ADMIN, ...STAFF],
-  staff: [...STAFF]
+  admin: [...ADMIN, ...STAFF, ...UNLISTED],
+  staff: [...STAFF, ...UNLISTED]
 };
 
-const PREFIX_SETS: Record<AuthRole, ReadonlySet<string>> = {
+/** Used only for sidebar nav — excludes UNLISTED routes for non-super_admin */
+const NAV_ALLOWED: Record<AuthRole, ReadonlySet<string>> = {
   super_admin: new Set(ALL),
   admin: new Set([...ADMIN, ...STAFF]),
   staff: new Set(STAFF)
@@ -69,7 +74,7 @@ export function normalizeRole(user: User | null | undefined): AuthRole {
 }
 
 export function getNavItemsForRole(role: AuthRole): NavItemDef[] {
-  const allowed = PREFIX_SETS[role];
+  const allowed = NAV_ALLOWED[role];
   return NAV_ITEMS.filter((item) => allowed.has(item.path));
 }
 
