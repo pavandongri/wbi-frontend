@@ -3,6 +3,7 @@ export type SubscriptionStatus = "active" | "cancelled" | "expired" | "scheduled
 export type SubscriptionsSortBy =
   | "status"
   | "planAmount"
+  | "planCode"
   | "netAmount"
   | "startDate"
   | "endDate"

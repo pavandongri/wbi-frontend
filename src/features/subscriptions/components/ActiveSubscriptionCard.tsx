@@ -30,7 +30,7 @@ function intervalLabel(interval: string): string {
   return "";
 }
 
-export default memo(function ActiveSubscriptionCard({ sub }: { sub: SubscriptionRow }) {
+function ActiveSubscriptionCard({ sub }: { sub: SubscriptionRow }) {
   const theme = useTheme();
 
   return (
@@ -104,4 +104,6 @@ export default memo(function ActiveSubscriptionCard({ sub }: { sub: Subscription
       </Button>
     </Box>
   );
-});
+}
+
+export default memo(ActiveSubscriptionCard);

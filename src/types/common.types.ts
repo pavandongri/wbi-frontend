@@ -12,6 +12,7 @@ export interface User {
   phone?: string | null;
   picture?: string;
   role?: AuthRole;
+  messageCredits?: number;
 }
 
 export type AuthClientSessionV1 = {

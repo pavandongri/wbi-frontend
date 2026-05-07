@@ -46,6 +46,7 @@ export type AuthSignupLoginData = {
   companyPhone?: string;
   phoneNumber?: string;
   role: string;
+  messageCredits: number;
   userDetails: {
     name: string;
     email: string;
@@ -62,4 +63,5 @@ export type AuthMeData = {
   role: string;
   name: string;
   email: string;
+  messageCredits: number;
 };

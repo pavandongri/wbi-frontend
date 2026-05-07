@@ -61,7 +61,13 @@ function SubscribeConfirmDialogComponent({
             startIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
             sx={PLANS_MODAL_ACTION_BUTTON_SX}
           >
-            Confirm
+            {isFree
+              ? isSubmitting
+                ? "Activating..."
+                : "Activate Plan"
+              : isSubmitting
+                ? "Preparing payment..."
+                : "Pay Now"}
           </Button>
         </>
       }
@@ -87,8 +93,7 @@ function SubscribeConfirmDialogComponent({
 
         {!isFree ? (
           <Alert severity="info" variant="outlined" sx={{ borderRadius: 2 }}>
-            Payment integration is coming soon. Your subscription will be activated immediately for
-            now.
+            You will be redirected to Razorpay to complete your payment securely.
           </Alert>
         ) : null}
 

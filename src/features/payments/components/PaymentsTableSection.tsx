@@ -2,16 +2,18 @@
 
 import StatusChip from "@/components/ui/StatusChip";
 import {
-  SUBS_CONTROL_RADIUS_PX,
-  SUBS_TABLE_SCROLL_MAX_HEIGHT_PX
-} from "@/features/subscriptions/subscriptionsUiTokens";
-import type { SubscriptionRow, SubscriptionsSortBy } from "@/types/subscriptions.types";
+  PAYMENTS_CONTROL_RADIUS_PX,
+  PAYMENTS_TABLE_SCROLL_MAX_HEIGHT_PX
+} from "@/features/payments/paymentsUiTokens";
+import type { PaymentRow, PaymentsSortBy } from "@/types/payments.types";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import {
   Box,
+  CircularProgress,
   IconButton,
   Paper,
   Skeleton,
@@ -23,50 +25,37 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Typography,
   useTheme
 } from "@mui/material";
 import { memo, useCallback } from "react";
 
-export type SubscriptionsTableSectionProps = {
-  rows: SubscriptionRow[];
+export type PaymentsTableSectionProps = {
+  rows: PaymentRow[];
   total: number;
   page: number;
   limit: number;
-  sortBy: SubscriptionsSortBy;
+  sortBy: PaymentsSortBy;
   sortOrder: "asc" | "desc";
   isFetching: boolean;
   isInitialLoading: boolean;
-  onSort: (field: SubscriptionsSortBy) => void;
+  generatingInvoiceFor: string | null;
+  onSort: (field: PaymentsSortBy) => void;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
+  onGenerateInvoice: (payment: PaymentRow) => void;
 };
 
-type HeadCell = {
-  id: SubscriptionsSortBy | string;
-  label: string;
-  width?: number;
-  sortable?: boolean;
-};
+type HeadCell = { id: PaymentsSortBy; label: string; width?: number };
 
 const HEAD: readonly HeadCell[] = [
-  { id: "planAmount", label: "Plan", width: 200 },
-  { id: "__messages__", label: "Messages", width: 130, sortable: false },
-  { id: "__platform__", label: "Platform", width: 130, sortable: false },
-  { id: "netAmount", label: "Amount", width: 130 },
-  { id: "startDate", label: "Start date", width: 140 },
-  { id: "endDate", label: "End date", width: 140 },
-  { id: "planCode", label: "Plan Code", width: 130 },
-  { id: "status", label: "Status", width: 130 }
-];
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
-}
+  { id: "type", label: "Type", width: 160 },
+  { id: "amount", label: "Amount", width: 130 },
+  { id: "status", label: "Status", width: 140 },
+  { id: "paidAt", label: "Paid at", width: 160 },
+  { id: "createdAt", label: "Created", width: 160 }
+] as const;
 
 function formatAmount(amount: number, currency: string): string {
   return new Intl.NumberFormat("en-IN", {
@@ -74,6 +63,19 @@ function formatAmount(amount: number, currency: string): string {
     currency,
     maximumFractionDigits: 0
   }).format(amount);
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function formatType(type: string): string {
+  return type === "message_credits" ? "Message Credits" : "Subscription";
 }
 
 function TablePaginationActions(props: {
@@ -128,7 +130,7 @@ function TablePaginationActions(props: {
   );
 }
 
-function SubscriptionsTableSectionComponent({
+function PaymentsTableSectionComponent({
   rows,
   total,
   page,
@@ -137,10 +139,12 @@ function SubscriptionsTableSectionComponent({
   sortOrder,
   isFetching,
   isInitialLoading,
+  generatingInvoiceFor,
   onSort,
   onPageChange,
-  onLimitChange
-}: SubscriptionsTableSectionProps) {
+  onLimitChange,
+  onGenerateInvoice
+}: PaymentsTableSectionProps) {
   const theme = useTheme();
   const muiPage = Math.max(0, page - 1);
 
@@ -161,13 +165,13 @@ function SubscriptionsTableSectionComponent({
         overflow: "hidden",
         bgcolor: "background.paper",
         border: `1px solid ${theme.palette.divider}`,
-        borderRadius: `${SUBS_CONTROL_RADIUS_PX}px`,
+        borderRadius: `${PAYMENTS_CONTROL_RADIUS_PX}px`,
         opacity: isFetching ? 0.92 : 1,
         transition: "opacity 160ms ease"
       }}
     >
-      <TableContainer sx={{ maxHeight: SUBS_TABLE_SCROLL_MAX_HEIGHT_PX, overflow: "auto" }}>
-        <Table size="medium" stickyHeader sx={{ minWidth: 1000, tableLayout: "fixed" }}>
+      <TableContainer sx={{ maxHeight: PAYMENTS_TABLE_SCROLL_MAX_HEIGHT_PX, overflow: "auto" }}>
+        <Table size="medium" stickyHeader sx={{ minWidth: 680, tableLayout: "fixed" }}>
           <TableHead>
             <TableRow
               sx={{
@@ -185,22 +189,18 @@ function SubscriptionsTableSectionComponent({
             >
               {HEAD.map((col) => (
                 <TableCell key={col.id} sx={{ width: col.width }}>
-                  {col.sortable === false ? (
-                    col.label
-                  ) : (
-                    <TableSortLabel
-                      active={sortBy === col.id}
-                      direction={sortBy === col.id ? sortOrder : "asc"}
-                      onClick={() => onSort(col.id as SubscriptionsSortBy)}
-                      sx={{
-                        "& .MuiTableSortLabel-icon": { opacity: sortBy === col.id ? 1 : 0.35 }
-                      }}
-                    >
-                      {col.label}
-                    </TableSortLabel>
-                  )}
+                  <TableSortLabel
+                    active={sortBy === col.id}
+                    direction={sortBy === col.id ? sortOrder : "asc"}
+                    onClick={() => onSort(col.id)}
+                    sx={{ "& .MuiTableSortLabel-icon": { opacity: sortBy === col.id ? 1 : 0.35 } }}
+                  >
+                    {col.label}
+                  </TableSortLabel>
                 </TableCell>
               ))}
+              <TableCell sx={{ width: 220 }}>Payment ID</TableCell>
+              <TableCell sx={{ width: 70 }}>Invoice</TableCell>
             </TableRow>
           </TableHead>
 
@@ -208,7 +208,7 @@ function SubscriptionsTableSectionComponent({
             {isInitialLoading
               ? Array.from({ length: Math.min(limit, 8) }).map((_, idx) => (
                   <TableRow key={`sk-${idx}`}>
-                    {Array.from({ length: HEAD.length }).map((__, c) => (
+                    {Array.from({ length: HEAD.length + 2 }).map((__, c) => (
                       <TableCell key={c}>
                         <Skeleton variant="text" height={22} />
                       </TableCell>
@@ -219,23 +219,23 @@ function SubscriptionsTableSectionComponent({
 
             {!isInitialLoading && rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={HEAD.length} sx={{ py: 7, border: 0 }}>
+                <TableCell colSpan={HEAD.length + 2} sx={{ py: 7, border: 0 }}>
                   <Typography
                     align="center"
                     color="text.secondary"
                     variant="body2"
                     fontWeight={600}
                   >
-                    No subscriptions found.
+                    No payments found.
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : null}
 
             {!isInitialLoading
-              ? rows.map((sub) => (
+              ? rows.map((payment) => (
                   <TableRow
-                    key={sub.id}
+                    key={payment.id}
                     hover
                     sx={{
                       "&:last-of-type td": { borderBottom: 0 },
@@ -243,57 +243,66 @@ function SubscriptionsTableSectionComponent({
                     }}
                   >
                     <TableCell>
-                      <Typography variant="body2" fontWeight={700} letterSpacing="-0.01em">
-                        {sub.planName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                        {sub.planInterval}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
                       <Typography variant="body2" fontWeight={600}>
-                        {sub.planMessageAmount.toLocaleString("en-IN")}
+                        {formatType(payment.type)}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
-                        {sub.planPlatformAmount > 0
-                          ? formatAmount(sub.planPlatformAmount, sub.currency)
-                          : "—"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={700}>
-                        {formatAmount(sub.netAmount, sub.currency)}
-                      </Typography>
-                      {sub.discount > 0 ? (
-                        <Typography variant="caption" color="text.secondary">
-                          -{formatAmount(sub.discount, sub.currency)} discount
+                      {payment.paymentMethod ? (
+                        <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                          via {payment.paymentMethod}
                         </Typography>
                       ) : null}
                     </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={700}>
+                        {formatAmount(payment.amount, payment.currency)}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <StatusChip
+                        status={payment.status === "captured" ? "active" : payment.status}
+                        label={payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                      />
+                    </TableCell>
+
                     <TableCell>
                       <Typography variant="body2" fontWeight={600} color="text.secondary">
-                        {formatDate(sub.startDate)}
+                        {formatDate(payment.paidAt)}
                       </Typography>
                     </TableCell>
+
                     <TableCell>
                       <Typography variant="body2" fontWeight={600} color="text.secondary">
-                        {formatDate(sub.endDate)}
+                        {formatDate(payment.createdAt)}
                       </Typography>
                     </TableCell>
+
                     <TableCell>
-                      <Typography
-                        variant="body2"
-                        fontWeight={600}
-                        color="text.secondary"
-                        sx={{ fontFamily: "monospace", fontSize: "0.8rem" }}
-                      >
-                        {sub.planCode}
+                      <Typography variant="body2" fontWeight={600} color="text.secondary">
+                        {payment.razorpayPaymentId ?? "—"}
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <StatusChip status={sub.status} />
+
+                    <TableCell align="center">
+                      {payment.status === "captured" ? (
+                        <Tooltip title="Download Invoice" placement="top">
+                          <span>
+                            <IconButton
+                              size="small"
+                              disabled={generatingInvoiceFor === payment.id}
+                              onClick={() => onGenerateInvoice(payment)}
+                              sx={{ borderRadius: 1.5, color: "text.secondary" }}
+                            >
+                              {generatingInvoiceFor === payment.id ? (
+                                <CircularProgress size={16} color="inherit" />
+                              ) : (
+                                <ReceiptLongOutlinedIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))
@@ -324,4 +333,4 @@ function SubscriptionsTableSectionComponent({
   );
 }
 
-export default memo(SubscriptionsTableSectionComponent);
+export default memo(PaymentsTableSectionComponent);

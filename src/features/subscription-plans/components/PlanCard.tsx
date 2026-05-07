@@ -38,22 +38,16 @@ const POPULAR_CODES = ["PRO", "BASIC_PLUS"];
 
 export type PlanCardProps = {
   plan: SubscriptionPlanRow;
-  isFreeTierDisabled: boolean;
+  isDisabled: boolean;
   isSubscribing: boolean;
   onSubscribe: (plan: SubscriptionPlanRow) => void;
 };
 
-function PlanCardComponent({
-  plan,
-  isFreeTierDisabled,
-  isSubscribing,
-  onSubscribe
-}: PlanCardProps) {
+function PlanCardComponent({ plan, isDisabled, isSubscribing, onSubscribe }: PlanCardProps) {
   const theme = useTheme();
   const isPopular =
     POPULAR_CODES.includes(plan.code.toUpperCase()) || plan.code.toUpperCase() === "PRO";
   const isFree = plan.amount <= 10;
-  const isDisabled = isFree && isFreeTierDisabled;
 
   return (
     <Paper
@@ -134,37 +128,15 @@ function PlanCardComponent({
         </Box>
 
         <Box sx={{ mt: "auto", pt: 1 }}>
-          {isDisabled ? (
-            <Button
-              fullWidth
-              variant="outlined"
-              disabled
-              sx={{ borderRadius: 2, fontWeight: 700, height: 44 }}
-            >
-              Not available
-            </Button>
-          ) : (
-            <Button
-              fullWidth
-              variant={isPopular ? "contained" : "outlined"}
-              onClick={() => onSubscribe(plan)}
-              disabled={isSubscribing}
-              sx={{ borderRadius: 2, fontWeight: 700, height: 44, boxShadow: "none" }}
-            >
-              {isFree ? "Get started free" : "Subscribe"}
-            </Button>
-          )}
-          {isDisabled ? (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              display="block"
-              textAlign="center"
-              mt={0.75}
-            >
-              Only available for first-time subscribers
-            </Typography>
-          ) : null}
+          <Button
+            fullWidth
+            variant={isPopular ? "contained" : "outlined"}
+            onClick={() => onSubscribe(plan)}
+            disabled={isDisabled || isSubscribing}
+            sx={{ borderRadius: 2, fontWeight: 700, height: 44, boxShadow: "none" }}
+          >
+            {isFree ? "Get started free" : "Subscribe"}
+          </Button>
         </Box>
       </Box>
     </Paper>

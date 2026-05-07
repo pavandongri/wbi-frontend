@@ -3,16 +3,16 @@
 import { useToast } from "@/components/ui";
 import PlanCard from "@/features/subscription-plans/components/PlanCard";
 import SubscribeConfirmDialog from "@/features/subscription-plans/components/SubscribeConfirmDialog";
+import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { ApiError } from "@/lib/apiClient";
 import { listSubscriptionPlans } from "@/services/subscription-plans/subscription-plans.api";
-import { createSubscription, listSubscriptions } from "@/services/subscriptions/subscriptions.api";
+import { listSubscriptions } from "@/services/subscriptions/subscriptions.api";
 import type { SubscriptionPlanRow } from "@/types/subscription-plans.types";
 import { Alert, Box, Skeleton, Typography } from "@mui/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { memo, useCallback, useMemo, useState } from "react";
 
 function SubscriptionPlansPricingView() {
-  const qc = useQueryClient();
   const toast = useToast();
 
   const plansQuery = useQuery({
@@ -30,47 +30,63 @@ function SubscriptionPlansPricingView() {
     staleTime: 30_000
   });
 
+  const activeSubQuery = useQuery({
+    queryKey: ["subscriptions", "active-check"] as const,
+    queryFn: () =>
+      listSubscriptions({
+        page: 1,
+        limit: 1,
+        status: "active",
+        sortBy: "createdAt",
+        sortOrder: "desc"
+      }),
+    staleTime: 30_000
+  });
+
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanRow | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogError, setDialogError] = useState<string | null>(null);
 
-  const subscribeMut = useMutation({
-    mutationFn: (planId: string) => createSubscription({ planId }),
-    onSuccess: async () => {
-      toast.showToast({ message: "Subscription activated successfully.", severity: "success" });
-      setDialogOpen(false);
-      setDialogError(null);
-      await qc.invalidateQueries({ queryKey: ["subscriptions"] });
+  const { openSubscriptionCheckout, isPending: isPaymentPending } = useRazorpayCheckout({
+    onSuccess: () => {
+      toast.showToast({
+        message: "Payment successful! Subscription activated.",
+        severity: "success"
+      });
     },
-    onError: (err) => {
-      const msg = err instanceof ApiError ? err.message : "Could not activate subscription.";
-      setDialogError(msg);
+    onError: (msg) => {
+      toast.showToast({ message: msg, severity: "error" });
     }
   });
 
   const hasEverSubscribed = (historyQuery.data?.total ?? 0) > 0;
+  const hasActiveSubscription = (activeSubQuery.data?.total ?? 0) > 0;
 
-  const activePlans = useMemo(
-    () => (plansQuery.data?.items ?? []).filter((p) => p.isActive),
-    [plansQuery.data]
+  const visiblePlans = useMemo(
+    () =>
+      (plansQuery.data?.items ?? []).filter(
+        (p) => p.isActive && !(p.code === "BASIC" && hasEverSubscribed)
+      ),
+    [plansQuery.data, hasEverSubscribed]
   );
 
-  const handleSubscribeClick = useCallback((plan: SubscriptionPlanRow) => {
-    setSelectedPlan(plan);
-    setDialogError(null);
-    setDialogOpen(true);
-  }, []);
+  const handleSubscribeClick = useCallback(
+    (plan: SubscriptionPlanRow) => {
+      if (hasActiveSubscription) return;
+      setSelectedPlan(plan);
+      setDialogOpen(true);
+    },
+    [hasActiveSubscription]
+  );
 
   const handleDialogClose = useCallback(() => {
-    if (subscribeMut.isPending) return;
+    if (isPaymentPending) return;
     setDialogOpen(false);
-  }, [subscribeMut.isPending]);
+  }, [isPaymentPending]);
 
   const handleConfirm = useCallback(() => {
     if (!selectedPlan) return;
-    setDialogError(null);
-    subscribeMut.mutate(selectedPlan.id);
-  }, [selectedPlan, subscribeMut]);
+    openSubscriptionCheckout(selectedPlan).then(() => setDialogOpen(false));
+  }, [selectedPlan, openSubscriptionCheckout]);
 
   const errorMessage = useMemo(() => {
     if (!plansQuery.isError) return null;
@@ -91,6 +107,13 @@ function SubscriptionPlansPricingView() {
         </Typography>
       </Box>
 
+      {hasActiveSubscription ? (
+        <Alert severity="info" variant="outlined" sx={{ borderRadius: 2 }}>
+          You already have an active subscription. To switch plans, please cancel your current
+          subscription first.
+        </Alert>
+      ) : null}
+
       {errorMessage ? (
         <Alert severity="error" variant="outlined" sx={{ borderRadius: 2 }}>
           {errorMessage}
@@ -105,7 +128,7 @@ function SubscriptionPlansPricingView() {
         </Box>
       ) : null}
 
-      {!isLoading && activePlans.length === 0 && !errorMessage ? (
+      {!isLoading && visiblePlans.length === 0 && !errorMessage ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Typography color="text.secondary" variant="body2" fontWeight={600}>
             No plans available at the moment.
@@ -113,7 +136,7 @@ function SubscriptionPlansPricingView() {
         </Box>
       ) : null}
 
-      {!isLoading && activePlans.length > 0 ? (
+      {!isLoading && visiblePlans.length > 0 ? (
         <Box
           sx={{
             display: "flex",
@@ -122,12 +145,12 @@ function SubscriptionPlansPricingView() {
             alignItems: { md: "stretch" }
           }}
         >
-          {activePlans.map((plan) => (
+          {visiblePlans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
-              isFreeTierDisabled={plan.amount <= 1 && hasEverSubscribed}
-              isSubscribing={subscribeMut.isPending && selectedPlan?.id === plan.id}
+              isDisabled={hasActiveSubscription}
+              isSubscribing={isPaymentPending && selectedPlan?.id === plan.id}
               onSubscribe={handleSubscribeClick}
             />
           ))}
@@ -138,8 +161,8 @@ function SubscriptionPlansPricingView() {
         key={dialogOpen ? (selectedPlan?.id ?? "new") : "plans-dialog-closed"}
         open={dialogOpen}
         plan={selectedPlan}
-        isSubmitting={subscribeMut.isPending}
-        errorMessage={dialogError}
+        isSubmitting={isPaymentPending}
+        errorMessage={null}
         onClose={handleDialogClose}
         onConfirm={handleConfirm}
       />

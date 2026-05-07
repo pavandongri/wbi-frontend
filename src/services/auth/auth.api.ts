@@ -30,7 +30,8 @@ function userFromMe(data: AuthMeData): User {
     phoneNumber: companyPhone,
     name: data.name,
     email: data.email,
-    role: isAuthRole(data.role) ? data.role : undefined
+    role: isAuthRole(data.role) ? data.role : undefined,
+    messageCredits: data.messageCredits
   };
 }
 
@@ -44,7 +45,8 @@ function userFromSignupLogin(data: AuthSignupLoginData): User {
     name: data.userDetails.name,
     email: data.userDetails.email,
     phone: data.userDetails.phone,
-    role: isAuthRole(data.role) ? data.role : undefined
+    role: isAuthRole(data.role) ? data.role : undefined,
+    messageCredits: data.messageCredits
   };
 }
 

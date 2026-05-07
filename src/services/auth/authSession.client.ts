@@ -42,7 +42,9 @@ function safeParse(raw: string | null): AuthClientSessionV1 | null {
             ? data.user.phone
             : undefined,
         picture: typeof data.user.picture === "string" ? data.user.picture : undefined,
-        role: isAuthRole(data.user.role) ? data.user.role : undefined
+        role: isAuthRole(data.user.role) ? data.user.role : undefined,
+        messageCredits:
+          typeof data.user.messageCredits === "number" ? data.user.messageCredits : undefined
       }
     };
   } catch {
