@@ -175,8 +175,8 @@ export default function ChatsFeature() {
       createMessage({
         from: args.from,
         to: args.to,
-        direction: "outbound",
-        body: args.body
+        body: args.body,
+        messageType: "text"
       }),
     onSuccess: async () => {
       toast.showToast({ message: "Message created.", severity: "success" });

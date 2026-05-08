@@ -1,18 +1,29 @@
 /** Mirrors backend enums — used for UI and future API wiring. */
 
-export type MessageStatus = "created" | "queued" | "sent" | "delivered" | "read" | "failed";
+export type MessageStatus =
+  | "created"
+  | "queued"
+  | "sent"
+  | "delivered"
+  | "read"
+  | "failed"
+  | "received";
 
 export type MessageDirection = "inbound" | "outbound";
+
+export type MessageType = "marketing" | "authentication" | "utility" | "text";
 
 /** One row from `messages` (UI-facing shape; dates as ISO strings from JSON). */
 export type MessageRow = {
   id: string;
+  wamid: string | null;
   from: string;
   to: string;
   body: string | null;
   templateId: string | null;
   templateHeaderParams: string | null;
   templateBodyParams: string[] | null;
+  messageType: MessageType;
   status: MessageStatus;
   direction: MessageDirection;
   failedReason: string | null;
@@ -47,6 +58,7 @@ export type MessagesListSortBy =
   | "createdAt"
   | "status"
   | "direction"
+  | "messageType"
   | "from"
   | "to"
   | "cost"
@@ -60,6 +72,7 @@ export type ListMessagesQuery = {
   q?: string;
   status?: MessageStatus;
   direction?: MessageDirection;
+  messageType?: MessageType;
   sortBy?: MessagesListSortBy;
   sortOrder?: MessagesListSortOrder;
 };
@@ -76,34 +89,26 @@ export type PaginatedMessages = {
 export type CreateMessageBody = {
   from: string;
   to: string;
-  direction: MessageDirection;
   body?: string | null;
   templateId?: string | null;
+  messageType?: MessageType;
   templateHeaderParams?: string | null;
   templateBodyParams?: string[] | null;
   failedReason?: string | null;
-  cost?: number;
-  sentAt?: string | null;
-  deliveredAt?: string | null;
-  readAt?: string | null;
 };
 
 /** PATCH /messages/:id — only send fields that change. */
 export type UpdateMessageBody = {
-  from?: string;
-  to?: string;
   body?: string | null;
   templateId?: string | null;
+  messageType?: MessageType;
   templateHeaderParams?: string | null;
   templateBodyParams?: string[] | null;
   status?: MessageStatus;
-  direction?: MessageDirection;
   failedReason?: string | null;
-  cost?: number;
   sentAt?: string | null;
   deliveredAt?: string | null;
   readAt?: string | null;
-  userId?: string | null;
 };
 
 export type DeleteMessageResponse = {

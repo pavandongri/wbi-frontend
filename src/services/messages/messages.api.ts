@@ -33,6 +33,7 @@ function buildListQuery(params: ListMessagesQuery): string {
   if (normalized.q?.trim()) sp.set("q", normalized.q.trim());
   if (normalized.status) sp.set("status", normalized.status);
   if (normalized.direction) sp.set("direction", normalized.direction);
+  if (normalized.messageType) sp.set("messageType", normalized.messageType);
   if (normalized.sortBy) sp.set("sortBy", normalized.sortBy);
   if (normalized.sortOrder) sp.set("sortOrder", normalized.sortOrder);
   return sp.toString();
