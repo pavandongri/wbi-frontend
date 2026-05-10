@@ -1,6 +1,6 @@
 "use client";
 
-import { exchangeMetaCode, subscribeToWaba } from "@/services/meta/meta.api";
+import { exchangeMetaCode } from "@/services/meta/meta.api";
 import type { FbLoginResponse, MetaExchangeCodeData } from "@/types/meta.types";
 import { useCallback, useRef, useState } from "react";
 
@@ -122,9 +122,9 @@ export function useMetaEmbeddedSignup(): UseMetaEmbeddedSignupReturn {
         phoneNumberId: sessionPhoneNumberId
       });
 
-      // Step 2: subscribe WABA to receive webhook events
-      setStatus("subscribing");
-      await subscribeToWaba();
+      // // Step 2: subscribe WABA to receive webhook events
+      // setStatus("subscribing");
+      // await subscribeToWaba();
 
       setResult(exchangeRes.data);
       setStatus("success");
