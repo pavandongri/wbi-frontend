@@ -37,11 +37,12 @@ export function mergeVariableKeys(header: string | null | undefined, body: strin
   return ordered;
 }
 
-/** Replace `{{key}}` using a map (first match wins per occurrence). */
+/** Replace `{{key}}` using a map. Falls back to `{{key}}` when the value is absent or empty. */
 export function substituteTemplateVariables(text: string, values: Record<string, string>): string {
   return text.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_, raw: string) => {
     const key = String(raw).trim();
-    return Object.prototype.hasOwnProperty.call(values, key) ? values[key]! : `{{${key}}}`;
+    const val = Object.prototype.hasOwnProperty.call(values, key) ? values[key]! : "";
+    return val || `{{${key}}}`;
   });
 }
 

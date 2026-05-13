@@ -19,6 +19,7 @@ import {
   TEMPLATE_VAR_NAME_PATTERN
 } from "@/features/templates/lib/templateValidation";
 import { ApiError } from "@/lib/apiClient";
+import { type MediaType, uploadMediaToS3, validateMediaFile } from "@/lib/uploadMedia";
 import { createTemplate } from "@/services/templates/templates.api";
 import type {
   CreateTemplateBody,
@@ -28,6 +29,7 @@ import type {
   TemplateHeaderType
 } from "@/types/templates.types";
 import AddIcon from "@mui/icons-material/Add";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CodeIcon from "@mui/icons-material/Code";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
@@ -48,6 +50,7 @@ import {
   IconButton,
   InputAdornment,
   InputLabel,
+  LinearProgress,
   Menu,
   MenuItem,
   Select,
@@ -57,7 +60,7 @@ import {
 } from "@mui/material";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { RefObject } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const R = `${ADMINS_CONTROL_RADIUS_PX}px`;
 const CONTROL_SX = {
@@ -67,14 +70,7 @@ const CONTROL_SX = {
 const EMOJI_INSERTS = ["😀", "😊", "👍", "✅", "❤️", "🙏", "📅", "✨", "🎉", "🔔"];
 
 const CATEGORIES: TemplateCategory[] = ["marketing", "utility"];
-const HEADER_TYPES: TemplateHeaderType[] = [
-  "none",
-  "text",
-  "image",
-  "video",
-  "document",
-  "location"
-];
+const HEADER_TYPES: TemplateHeaderType[] = ["none", "text", "image", "video", "document"];
 
 function emptyButton(type: TemplateButtonFormRow["type"]): TemplateButtonFormRow {
   if (type === "url") return { type: "url", text: "", url: "", url_type: "static" };
@@ -106,22 +102,32 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
   const toast = useToast();
   const headerInputRef = useRef<HTMLInputElement | null>(null);
   const bodyInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement | null>(null);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState<TemplateCategory>("marketing");
   const [headerType, setHeaderType] = useState<TemplateHeaderType>("none");
   const [headerText, setHeaderText] = useState("");
-  const [headerMediaUrl, setHeaderMediaUrl] = useState("");
+  const [headerMediaFile, setHeaderMediaFile] = useState<File | null>(null);
+  const [headerMediaObjectUrl, setHeaderMediaObjectUrl] = useState<string | null>(null);
   const [body, setBody] = useState("");
   const [footer, setFooter] = useState("");
   const [buttons, setButtons] = useState<TemplateButtonFormRow[]>([]);
   const [varSamples, setVarSamples] = useState<Record<string, string>>({});
   const [localError, setLocalError] = useState<string | null>(null);
+  const [submitStep, setSubmitStep] = useState<string | null>(null);
 
   const [varDialogTarget, setVarDialogTarget] = useState<VarTarget | null>(null);
   const [varNameDraft, setVarNameDraft] = useState("");
 
   const [emojiAnchor, setEmojiAnchor] = useState<null | HTMLElement>(null);
+
+  // Revoke blob URL when it changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (headerMediaObjectUrl) URL.revokeObjectURL(headerMediaObjectUrl);
+    };
+  }, [headerMediaObjectUrl]);
 
   const headerVarCount = useMemo(() => countVariablePlaceholders(headerText), [headerText]);
   const headerVarFull = headerVarCount >= 1;
@@ -131,11 +137,45 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
     [headerText, body, headerType]
   );
 
+  const allVarsFilled = useMemo(
+    () => varKeys.every((k) => !!varSamples[k]?.trim()),
+    [varKeys, varSamples]
+  );
+
   const previewValues = useMemo(() => {
     const m: Record<string, string> = { ...varSamples };
     for (const k of varKeys) if (m[k] === undefined) m[k] = "";
     return m;
   }, [varKeys, varSamples]);
+
+  const clearMediaFile = () => {
+    setHeaderMediaFile(null);
+    if (headerMediaObjectUrl) URL.revokeObjectURL(headerMediaObjectUrl);
+    setHeaderMediaObjectUrl(null);
+    if (mediaInputRef.current) mediaInputRef.current.value = "";
+  };
+
+  const handleHeaderTypeChange = (newType: TemplateHeaderType) => {
+    clearMediaFile();
+    setHeaderType(newType);
+  };
+
+  const handleMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const mediaType = headerType as MediaType;
+    const err = validateMediaFile(file, mediaType);
+    if (err) {
+      toast.showToast({ message: err, severity: "warning" });
+      e.target.value = "";
+      return;
+    }
+
+    if (headerMediaObjectUrl) URL.revokeObjectURL(headerMediaObjectUrl);
+    setHeaderMediaFile(file);
+    setHeaderMediaObjectUrl(URL.createObjectURL(file));
+  };
 
   const openVarDialog = (target: VarTarget) => {
     if (target === "header" && headerVarFull) {
@@ -218,6 +258,18 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
         }
       }
 
+      // Upload media: S3 → Meta registration → { s3Key, metaHandle }
+      let uploadResult: { s3Key: string; metaHandle: string } | undefined;
+      if (headerType !== "none" && headerType !== "text" && headerMediaFile) {
+        uploadResult = await uploadMediaToS3(
+          headerMediaFile,
+          headerType as MediaType,
+          setSubmitStep
+        );
+      }
+
+      setSubmitStep("Creating template…");
+
       const headerKeys = extractTemplateVariableKeys(headerType === "text" ? headerText : "");
       const bodyKeys = extractTemplateVariableKeys(body);
       const headerExample =
@@ -260,23 +312,26 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
         bodyExample
       };
       if (headerType === "text" && headerText.trim()) payload.headerText = headerText.trim();
-      if (headerType !== "text" && headerType !== "none" && headerMediaUrl.trim()) {
-        payload.headerMediaUrl = headerMediaUrl.trim();
+      if (headerType !== "text" && headerType !== "none" && uploadResult) {
+        payload.headerMediaUrl = uploadResult.s3Key;
+        payload.headerMediaHandler = uploadResult.metaHandle;
       }
       return createTemplate(payload);
     },
     onSuccess: async () => {
+      setSubmitStep(null);
       await qc.invalidateQueries({ queryKey: ["templates", "list"] });
       setName("");
       setBody("");
       setFooter("");
       setHeaderText("");
-      setHeaderMediaUrl("");
+      clearMediaFile();
       setButtons([]);
       setVarSamples({});
       onCreated?.();
     },
     onError: (err) => {
+      setSubmitStep(null);
       const msg =
         err instanceof ApiError || err instanceof Error
           ? err.message
@@ -292,6 +347,18 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
       </Alert>
     );
   }
+
+  const isMediaType = headerType === "image" || headerType === "video" || headerType === "document";
+
+  const mediaAccept =
+    headerType === "image"
+      ? "image/*"
+      : headerType === "video"
+        ? "video/*"
+        : ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt";
+
+  const mediaSizeLabel =
+    headerType === "image" ? "max 1 MB" : headerType === "video" ? "max 5 MB" : "max 2 MB";
 
   return (
     <Box
@@ -316,11 +383,18 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
           <TextField
             label="Template name"
             value={name}
-            onChange={(e) => setName(e.target.value.toLowerCase().replace(/[^a-z_]/g, ""))}
+            onChange={(e) => {
+              const val = e.target.value
+                .toLowerCase()
+                .replace(/ /g, "_")
+                .replace(/[^a-z_]/g, "")
+                .replace(/_+/g, "_");
+              setName(val);
+            }}
             required
             fullWidth
             sx={{ flex: "1 1 240px", ...CONTROL_SX }}
-            helperText="Lowercase letters and underscores only (e.g. welcome_template)."
+            helperText="Lowercase letters and underscores only"
             inputProps={{ maxLength: 512 }}
           />
           <FormControl sx={{ flex: "1 1 200px", ...CONTROL_SX }}>
@@ -333,7 +407,7 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
             >
               {CATEGORIES.map((c) => (
                 <MenuItem key={c} value={c} sx={{ borderRadius: R }}>
-                  {c}
+                  {c.toUpperCase()}
                 </MenuItem>
               ))}
             </Select>
@@ -344,11 +418,11 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
               labelId="tpl-hdr"
               label="Header type"
               value={headerType}
-              onChange={(e) => setHeaderType(e.target.value as TemplateHeaderType)}
+              onChange={(e) => handleHeaderTypeChange(e.target.value as TemplateHeaderType)}
             >
               {HEADER_TYPES.map((h) => (
                 <MenuItem key={h} value={h} sx={{ borderRadius: R }}>
-                  {h}
+                  {h.toUpperCase()}
                 </MenuItem>
               ))}
             </Select>
@@ -408,15 +482,107 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
           </Box>
         ) : null}
 
-        {headerType !== "none" && headerType !== "text" ? (
-          <TextField
-            label="Header media URL (optional)"
-            value={headerMediaUrl}
-            onChange={(e) => setHeaderMediaUrl(e.target.value)}
-            fullWidth
-            sx={{ mt: 2.5, ...CONTROL_SX }}
-            placeholder="https://…"
-          />
+        {isMediaType ? (
+          <Box sx={{ mt: 2.5 }}>
+            <input
+              type="file"
+              ref={mediaInputRef}
+              accept={mediaAccept}
+              style={{ display: "none" }}
+              onChange={handleMediaFileChange}
+            />
+            {!headerMediaFile ? (
+              <Box
+                onClick={() => mediaInputRef.current?.click()}
+                sx={{
+                  border: "2px dashed",
+                  borderColor: "divider",
+                  borderRadius: R,
+                  p: 3,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  "&:hover": { borderColor: "primary.main", bgcolor: "action.hover" }
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
+                <Typography variant="body2" color="text.secondary">
+                  Click to upload {headerType} ({mediaSizeLabel})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    mediaInputRef.current?.click();
+                  }}
+                  sx={{ mt: 1.5, borderRadius: R, textTransform: "none" }}
+                >
+                  Choose file
+                </Button>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: R,
+                  p: 2,
+                  bgcolor: "background.paper"
+                }}
+              >
+                {headerType === "image" && headerMediaObjectUrl ? (
+                  <Box
+                    component="img"
+                    src={headerMediaObjectUrl}
+                    alt="Preview"
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: 200,
+                      display: "block",
+                      mb: 1.5,
+                      borderRadius: R,
+                      objectFit: "contain"
+                    }}
+                  />
+                ) : null}
+                {headerType === "video" && headerMediaObjectUrl ? (
+                  <Box
+                    component="video"
+                    src={headerMediaObjectUrl}
+                    controls
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: 200,
+                      display: "block",
+                      mb: 1.5,
+                      borderRadius: R
+                    }}
+                  />
+                ) : null}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="body2" sx={{ flex: 1 }} noWrap>
+                    {headerMediaFile.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ whiteSpace: "nowrap" }}
+                  >
+                    {(headerMediaFile.size / 1024).toFixed(1)} KB
+                  </Typography>
+                  <Button
+                    size="small"
+                    color="inherit"
+                    startIcon={<DeleteOutlineIcon fontSize="small" />}
+                    onClick={clearMediaFile}
+                    sx={{ borderRadius: R, textTransform: "none" }}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
         ) : null}
 
         <Box sx={{ mt: 2.5 }}>
@@ -641,7 +807,7 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
               onClick={() => setButtons((prev) => [...prev, emptyButton(t)])}
               sx={{ borderRadius: R, textTransform: "none", fontWeight: 600 }}
             >
-              {t === "quick_reply" ? "Quick reply" : t === "url" ? "URL" : "Phone"}
+              {t === "quick_reply" ? "QUICK_REPLY" : t === "url" ? "URL" : "PHONE_NUMBER"}
             </Button>
           ))}
         </Box>
@@ -668,7 +834,7 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
                 textTransform="uppercase"
                 letterSpacing={0.04}
               >
-                {b.type.replace("_", " ")}
+                {b.type.toUpperCase()}
               </Typography>
               <Button
                 size="small"
@@ -721,10 +887,24 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
           </Box>
         ))}
 
-        <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mt: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
+            mt: 1,
+            gap: 1.5
+          }}
+        >
+          {!allVarsFilled && varKeys.length > 0 && !createMut.isPending ? (
+            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 500 }}>
+              Fill in all variable examples before submitting.
+            </Typography>
+          ) : null}
           <Button
             variant="contained"
-            disabled={createMut.isPending}
+            disabled={createMut.isPending || !allVarsFilled}
             onClick={() => createMut.mutate()}
             sx={{
               minWidth: 200,
@@ -737,6 +917,18 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
           >
             Submit template
           </Button>
+          {createMut.isPending && submitStep ? (
+            <Box sx={{ width: "100%", maxWidth: 400 }}>
+              <LinearProgress sx={{ borderRadius: 2, mb: 0.75 }} />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", textAlign: "center" }}
+              >
+                {submitStep}
+              </Typography>
+            </Box>
+          ) : null}
         </Box>
       </Box>
 
@@ -746,6 +938,9 @@ export default function TemplatesCreateTab({ companyScoped, onCreated }: Props) 
         </Typography>
         <TemplateMessagePreview
           headerText={headerType === "text" ? headerText : null}
+          headerMediaObjectUrl={isMediaType ? headerMediaObjectUrl : null}
+          headerMediaType={isMediaType ? (headerType as "image" | "video" | "document") : null}
+          headerMediaFilename={headerMediaFile?.name ?? null}
           body={body || " "}
           footer={footer || null}
           buttons={buttons.length ? buttons : null}

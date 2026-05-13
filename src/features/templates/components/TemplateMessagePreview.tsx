@@ -7,6 +7,7 @@ import {
 } from "@/features/templates/lib/templateText";
 import type { TemplateButton, TemplateButtonFormRow } from "@/types/templates.types";
 import CallOutlinedIcon from "@mui/icons-material/CallOutlined";
+import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
 import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
 import { Box, Paper, Typography } from "@mui/material";
@@ -61,6 +62,12 @@ function renderSegments(text: string, codeBg: string) {
 
 export type TemplateMessagePreviewProps = {
   headerText: string | null;
+  /** Blob object URL for local media preview (image / video / document). */
+  headerMediaObjectUrl?: string | null;
+  /** The media type when a file is selected. */
+  headerMediaType?: "image" | "video" | "document" | null;
+  /** Original filename shown in the document thumbnail. */
+  headerMediaFilename?: string | null;
   body: string;
   footer: string | null;
   buttons: Array<TemplateButton | TemplateButtonFormRow> | null | undefined;
@@ -70,6 +77,9 @@ export type TemplateMessagePreviewProps = {
 
 export default function TemplateMessagePreview({
   headerText,
+  headerMediaObjectUrl,
+  headerMediaType,
+  headerMediaFilename,
   body,
   footer,
   buttons,
@@ -96,6 +106,59 @@ export default function TemplateMessagePreview({
         boxShadow: `0 10px 28px ${alpha(theme.palette.common.black, 0.06)}`
       }}
     >
+      {/* Media header: image */}
+      {headerMediaType === "image" && headerMediaObjectUrl ? (
+        <Box
+          component="img"
+          src={headerMediaObjectUrl}
+          alt="Header image"
+          sx={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }}
+        />
+      ) : null}
+
+      {/* Media header: video */}
+      {headerMediaType === "video" && headerMediaObjectUrl ? (
+        <Box
+          component="video"
+          src={headerMediaObjectUrl}
+          controls
+          sx={{ width: "100%", maxHeight: 180, display: "block", bgcolor: "#000" }}
+        />
+      ) : null}
+
+      {/* Media header: document thumbnail */}
+      {headerMediaType === "document" ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.25,
+            px: 1.75,
+            py: 1.5,
+            bgcolor: alpha(primary, 0.06),
+            borderBottom: `1px solid ${alpha(primary, 0.1)}`
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 48,
+              borderRadius: "4px",
+              bgcolor: alpha(primary, 0.12),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}
+          >
+            <InsertDriveFileOutlinedIcon sx={{ color: "primary.main", fontSize: 24 }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary" noWrap sx={{ flex: 1 }}>
+            {headerMediaFilename ?? "Document"}
+          </Typography>
+        </Box>
+      ) : null}
+
       <Box
         sx={{
           background: `linear-gradient(165deg, ${bubbleTint} 0%, ${bubbleBg} 42%, ${alpha(primary, 0.06)} 100%)`,

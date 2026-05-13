@@ -11,6 +11,7 @@ import { sendTemplateMessage } from "@/services/templates/templates.api";
 import type { CustomerRow } from "@/types/customers.types";
 import type { GroupRow } from "@/types/groups.types";
 import type { TemplateRow } from "@/types/templates.types";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import {
   Alert,
   Autocomplete,
@@ -19,11 +20,14 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
+  IconButton,
   Radio,
   RadioGroup,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -57,6 +61,7 @@ function initParamValues(t: TemplateRow | null): Record<string, string> {
 
 export default function TemplatesSendTab({ templates, templatesLoading, companyScoped }: Props) {
   const toast = useToast();
+  const theme = useTheme();
   const activeTemplates = useMemo(
     () => templates.filter((t) => t.status !== "deleted" && !t.deletedAtMeta && !t.deletedAt),
     [templates]
@@ -292,12 +297,44 @@ export default function TemplatesSendTab({ templates, templatesLoading, companyS
       </Box>
 
       <Box sx={{ position: { md: "sticky" }, top: { md: 16 } }}>
-        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-          Preview
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+          <Typography variant="subtitle2" fontWeight={700}>
+            Preview
+          </Typography>
+          {selected?.headerMediaUrl ? (
+            <Tooltip title="View / download media" placement="top" arrow>
+              <IconButton
+                component="a"
+                href={selected.headerMediaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                sx={{
+                  ml: "auto",
+                  width: 30,
+                  height: 30,
+                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                  color: "primary.main",
+                  borderRadius: "8px",
+                  "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.16) }
+                }}
+              >
+                <FileDownloadOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          ) : null}
+        </Box>
         {selected ? (
           <TemplateMessagePreview
             headerText={selected.headerText}
+            headerMediaObjectUrl={selected.headerMediaUrl ?? null}
+            headerMediaType={
+              selected.headerType.toLowerCase() === "image" ||
+              selected.headerType.toLowerCase() === "video" ||
+              selected.headerType.toLowerCase() === "document"
+                ? (selected.headerType.toLowerCase() as "image" | "video" | "document")
+                : null
+            }
             body={selected.body}
             footer={selected.footer}
             buttons={selected.buttons}
