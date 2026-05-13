@@ -33,6 +33,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import PersonIcon from "@mui/icons-material/Person";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
 import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
 import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
@@ -62,7 +63,8 @@ const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   templates: <ArticleOutlinedIcon />,
   chats: <ChatOutlinedIcon />,
   campaigns: <CampaignOutlinedIcon />,
-  workflows: <AccountTreeOutlinedIcon />
+  workflows: <AccountTreeOutlinedIcon />,
+  qr: <QrCode2Icon />
 };
 
 type NavLink = { text: string; icon: ReactNode; href: string };

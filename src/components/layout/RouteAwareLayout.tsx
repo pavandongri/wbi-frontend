@@ -27,12 +27,13 @@ export default function RouteAwareLayout({ children }: RouteAwareLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPath = pathname.startsWith("/auth");
+  const isPublicPath = /^\/customers\/[^/]+/.test(pathname);
   const [checkingAuth, setCheckingAuth] = useState(
-    () => !isAuthPath && !isAuthClientSessionFresh()
+    () => !isAuthPath && !isPublicPath && !isAuthClientSessionFresh()
   );
 
   useEffect(() => {
-    if (isAuthPath) return;
+    if (isAuthPath || isPublicPath) return;
 
     let active = true;
 
@@ -50,7 +51,7 @@ export default function RouteAwareLayout({ children }: RouteAwareLayoutProps) {
     return () => {
       active = false;
     };
-  }, [isAuthPath, router]);
+  }, [isAuthPath, isPublicPath, router]);
 
   useEffect(() => {
     if (!isAuthPath) return;
@@ -62,7 +63,7 @@ export default function RouteAwareLayout({ children }: RouteAwareLayoutProps) {
     router.replace(target);
   }, [isAuthPath, router, pathname]);
 
-  if (isAuthPath) {
+  if (isAuthPath || isPublicPath) {
     return children;
   }
 

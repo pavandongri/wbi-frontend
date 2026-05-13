@@ -10,7 +10,8 @@ const STAFF = [
   "/chats",
   "/campaigns",
   "/workflows",
-  "/subscriptions"
+  "/subscriptions",
+  "/qr"
 ] as const;
 
 /** Routes accessible to admin/staff but NOT shown in their sidebar nav */
@@ -46,7 +47,8 @@ export type NavIconKey =
   | "templates"
   | "chats"
   | "campaigns"
-  | "workflows";
+  | "workflows"
+  | "qr";
 
 export type NavItemDef = { path: string; label: string; icon: NavIconKey };
 
@@ -66,7 +68,8 @@ export const NAV_ITEMS: readonly NavItemDef[] = [
   { path: "/templates", label: "Templates", icon: "templates" },
   { path: "/chats", label: "Chats", icon: "chats" },
   { path: "/campaigns", label: "Campaigns", icon: "campaigns" },
-  { path: "/workflows", label: "Workflows", icon: "workflows" }
+  { path: "/workflows", label: "Workflows", icon: "workflows" },
+  { path: "/qr", label: "QR Code", icon: "qr" }
 ];
 
 export function normalizeRole(user: User | null | undefined): AuthRole {
@@ -86,6 +89,7 @@ export function isCompanyAdminRole(role: AuthRole): boolean {
 export function canRoleAccessPathname(role: AuthRole, pathname: string): boolean {
   const path = pathname.split("?")[0];
   if (path === "/" || path.startsWith("/profile") || path.startsWith("/auth")) return true;
+  if (/^\/customers\/[^/]+/.test(path)) return true;
   return ROLE_PREFIXES[role].some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
